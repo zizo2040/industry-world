@@ -696,6 +696,88 @@ function generateBreadcrumbSchema(array $items): string {
 }
 
 /**
+ * Return $url with ?lang= set for English (Arabic = default, no param).
+ * Used for canonical URLs and hreflang alternates so every language
+ * version has its own crawlable URL.
+ */
+function langUrl(string $url, string $lang): string {
+    $parts = parse_url($url);
+    $query = [];
+    if (!empty($parts['query'])) parse_str($parts['query'], $query);
+    unset($query['lang']);
+    if ($lang !== DEFAULT_LANGUAGE) $query['lang'] = $lang;
+    $base = strtok($url, '?#');
+    $qs = http_build_query($query);
+    return $base . ($qs !== '' ? '?' . $qs : '');
+}
+
+/**
+ * Site-wide structured data: Organization/LocalBusiness + WebSite (with
+ * sitelinks search box). Printed on every page in a single @graph.
+ */
+function generateSiteGraphSchema(): array {
+    $lang  = getCurrentLang();
+    $logo  = get_site_logo_url('header', 'light') ?: url('assets/images/' . getSetting('site_favicon', 'favicon.ico'));
+    $phones = array_values(array_filter([getSetting('whatsapp_primary'), getSetting('whatsapp_secondary_1'), getSetting('whatsapp_secondary_2')]));
+    $business = [
+        '@type' => ['Store', 'ElectronicsStore'],
+        '@id' => SITE_URL . '/#business',
+        'name' => getSetting('site_name_' . $lang),
+        'alternateName' => array_values(array_filter([
+            getSetting('site_name_alt_' . $lang),
+            getSetting('site_name_' . ($lang === 'ar' ? 'en' : 'ar')),
+            $lang === 'ar' ? 'عالم الصناعة' : 'Alam Al-Sinaa',
+        ])),
+        'description' => getSetting('default_meta_description_' . $lang),
+        'url' => SITE_URL . '/',
+        'logo' => $logo,
+        'image' => $logo,
+        'telephone' => $phones ? '+' . normalizeYemenPhone($phones[0]) : null,
+        'contactPoint' => array_map(fn($p) => [
+            '@type' => 'ContactPoint',
+            'telephone' => '+' . normalizeYemenPhone($p),
+            'contactType' => 'sales',
+            'areaServed' => 'YE',
+            'availableLanguage' => ['ar', 'en'],
+        ], $phones),
+        'address' => [
+            '@type' => 'PostalAddress',
+            'streetAddress' => getSetting('company_address_' . $lang),
+            'addressLocality' => $lang === 'ar' ? 'تعز - الحوبان' : 'Taiz - Al-Hawban',
+            'addressRegion' => $lang === 'ar' ? 'تعز' : 'Taiz',
+            'addressCountry' => 'YE',
+        ],
+        'geo' => ['@type' => 'GeoCoordinates', 'latitude' => 13.6045, 'longitude' => 44.0700],
+        'areaServed' => ['@type' => 'Country', 'name' => 'Yemen'],
+        'priceRange' => '$$',
+        'currenciesAccepted' => 'YER, SAR, USD',
+        'openingHoursSpecification' => [
+            ['@type' => 'OpeningHoursSpecification', 'dayOfWeek' => ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'], 'opens' => '08:00', 'closes' => '22:00'],
+            ['@type' => 'OpeningHoursSpecification', 'dayOfWeek' => ['Friday'], 'opens' => '14:00', 'closes' => '22:00'],
+        ],
+        'knowsAbout' => array_map('trim', array_slice(preg_split('/[،,]/u', getSetting('default_meta_keywords_' . $lang)), 0, 30)),
+        'sameAs' => array_values(array_filter([
+            getSetting('facebook_url'), getSetting('instagram_url'), getSetting('twitter_url'),
+            getSetting('youtube_url'), getSetting('tiktok_url'), getSetting('linkedin_url'),
+        ])),
+    ];
+    $website = [
+        '@type' => 'WebSite',
+        '@id' => SITE_URL . '/#website',
+        'url' => SITE_URL . '/',
+        'name' => getSetting('site_name_' . $lang),
+        'inLanguage' => $lang === 'ar' ? 'ar-YE' : 'en',
+        'publisher' => ['@id' => SITE_URL . '/#business'],
+        'potentialAction' => [
+            '@type' => 'SearchAction',
+            'target' => ['@type' => 'EntryPoint', 'urlTemplate' => url('search.php') . '?q={search_term_string}'],
+            'query-input' => 'required name=search_term_string',
+        ],
+    ];
+    return [array_filter($business, fn($v) => $v !== null && $v !== []), $website];
+}
+
+/**
  * Generate local business schema
  */
 function generateLocalBusinessSchema(): string {

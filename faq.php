@@ -8,7 +8,8 @@ initApp();
 $lang = getCurrentLang();
 $activePage = 'faq';
 
-$pageTitle = ($lang === 'ar' ? 'الأسئلة الشائعة - ' : 'FAQ - ') . getSetting('site_name_' . $lang);
+$seo = getSeoSettings('faq');
+$pageTitle = $seo['title'] ?: (($lang === 'ar' ? 'الأسئلة الشائعة - ' : 'FAQ - ') . getSetting('site_name_' . $lang));
 $pageDescription = $lang === 'ar' ? 'إجابات على الأسئلة الأكثر شيوعاً حول منتجاتنا وخدماتنا' : 'Answers to the most common questions about our products and services';
 $canonicalUrl = url('faq.php');
 

@@ -12,8 +12,9 @@ $activePage = 'services';
 $cmsPage = Database::fetchOne("SELECT * FROM cms_pages WHERE page_key = 'services' AND is_active = 1");
 
 // SEO
-$pageTitle = ($lang === 'ar' ? 'خدماتنا - ' : 'Our Services - ') . getSetting('site_name_' . $lang);
-$pageDescription = $cmsPage ? e($cmsPage['excerpt_' . $lang]) : getSetting('default_meta_description_' . $lang);
+$seo = getSeoSettings('services');
+$pageTitle = $seo['title'] ?: (($lang === 'ar' ? 'خدماتنا - ' : 'Our Services - ') . getSetting('site_name_' . $lang));
+$pageDescription = ($seo['description'] ?? '') ?: (($cmsPage['excerpt_' . $lang] ?? '') ?: getSetting('default_meta_description_' . $lang));
 $canonicalUrl = url('services.php');
 
 $schemaMarkup = generateBreadcrumbSchema([

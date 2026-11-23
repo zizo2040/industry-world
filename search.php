@@ -52,8 +52,9 @@ if ($query) {
     $results = array_merge($products, $categories, $portfolio);
 }
 
-$pageTitle = ($lang === 'ar' ? 'البحث: ' : 'Search: ') . e($query) . ' - ' . getSetting('site_name_' . $lang);
-$pageDescription = $lang === 'ar' ? 'نتائج البحث عن: ' . e($query) : 'Search results for: ' . e($query);
+$pageTitle = ($lang === 'ar' ? 'البحث: ' : 'Search: ') . $query . ' - ' . getSetting('site_name_' . $lang);
+$pageDescription = $lang === 'ar' ? 'نتائج البحث عن: ' . $query : 'Search results for: ' . $query;
+$robotsMeta = 'noindex,follow'; // internal search results must not be indexed
 $canonicalUrl = url('search.php?q=' . urlencode($query));
 
 include BASE_PATH . '/includes/header.php';

@@ -20,32 +20,61 @@ $activePage = $activePage ?? '';
     <meta name="referrer" content="strict-origin-when-cross-origin">
     
     <!-- SEO Meta -->
-    <title><?php echo e($pageTitle ?? getSetting('site_name_' . $lang, 'Alam Al-Sinaa for Electricity Trading')); ?></title>
-    <meta name="description" content="<?php echo e($pageDescription ?? getSetting('default_meta_description_' . $lang)); ?>">
-    <meta name="keywords" content="<?php echo e($pageKeywords ?? getSetting('default_meta_keywords_' . $lang)); ?>">
-    <meta name="robots" content="<?php echo e($robotsMeta ?? 'index,follow'); ?>">
-    <link rel="canonical" href="<?php echo e($canonicalUrl ?? currentUrl()); ?>">
-    
+    <?php
+    $seoSiteName = getSetting('site_name_' . $lang, 'Alam Al-Sinaa for Electricity Trading');
+    $seoTitle = trim((string) ($pageTitle ?? '')) ?: (getSetting('default_meta_title_' . $lang) ?: $seoSiteName);
+    $seoDesc  = trim((string) ($pageDescription ?? '')) ?: getSetting('default_meta_description_' . $lang);
+    $seoDesc  = mb_substr(trim(preg_replace('/\s+/u', ' ', strip_tags($seoDesc))), 0, 300);
+    $seoKeywords = trim((string) ($pageKeywords ?? '')) ?: getSetting('default_meta_keywords_' . $lang);
+    $seoBaseUrl  = $canonicalUrl ?? strtok(currentUrl(), '#');
+    $seoCanonical = langUrl($seoBaseUrl, $lang);
+    $seoRobots = $robotsMeta ?? 'index,follow,max-image-preview:large,max-snippet:-1';
+    $ogImageUrl = $ogImage ?? (getSetting('og_image') ? url('assets/images/' . getSetting('og_image')) : (get_site_logo_url('header', 'light') ?: ''));
+    if ($ogImageUrl && !preg_match('#^https?://#', $ogImageUrl)) $ogImageUrl = url($ogImageUrl);
+    ?>
+    <title><?php echo e($seoTitle); ?></title>
+    <meta name="description" content="<?php echo e($seoDesc); ?>">
+    <?php if ($seoKeywords): ?><meta name="keywords" content="<?php echo e($seoKeywords); ?>"><?php endif; ?>
+    <meta name="robots" content="<?php echo e($seoRobots); ?>">
+    <link rel="canonical" href="<?php echo e($seoCanonical); ?>">
+    <?php if (stripos($seoRobots, 'noindex') === false): ?>
+    <link rel="alternate" hreflang="ar" href="<?php echo e(langUrl($seoBaseUrl, 'ar')); ?>">
+    <link rel="alternate" hreflang="en" href="<?php echo e(langUrl($seoBaseUrl, 'en')); ?>">
+    <link rel="alternate" hreflang="x-default" href="<?php echo e(langUrl($seoBaseUrl, 'ar')); ?>">
+    <?php endif; ?>
+    <meta name="author" content="<?php echo e($seoSiteName); ?>">
+    <meta name="geo.region" content="YE-TA">
+    <meta name="geo.placename" content="<?php echo $lang === 'ar' ? 'تعز - الحوبان' : 'Taiz, Al-Hawban'; ?>">
+    <meta name="geo.position" content="13.6045;44.0700">
+    <meta name="ICBM" content="13.6045, 44.0700">
+    <meta name="theme-color" content="#0281de">
+    <meta name="format-detection" content="telephone=yes">
+    <?php if (getSetting('site_verification_google')): ?><meta name="google-site-verification" content="<?php echo e(getSetting('site_verification_google')); ?>"><?php endif; ?>
+    <?php if (getSetting('site_verification_bing')): ?><meta name="msvalidate.01" content="<?php echo e(getSetting('site_verification_bing')); ?>"><?php endif; ?>
+
     <!-- Open Graph -->
     <meta property="og:locale" content="<?php echo $lang === 'ar' ? 'ar_YE' : 'en_US'; ?>">
+    <meta property="og:locale:alternate" content="<?php echo $lang === 'ar' ? 'en_US' : 'ar_YE'; ?>">
     <meta property="og:type" content="<?php echo e($ogType ?? 'website'); ?>">
-    <meta property="og:title" content="<?php echo e($ogTitle ?? ($pageTitle ?? getSetting('site_name_' . $lang))); ?>">
-    <meta property="og:description" content="<?php echo e($ogDescription ?? ($pageDescription ?? getSetting('default_meta_description_' . $lang))); ?>">
-    <meta property="og:url" content="<?php echo e($canonicalUrl ?? currentUrl()); ?>">
-    <meta property="og:site_name" content="<?php echo e(getSetting('site_name_' . $lang)); ?>">
-    <meta property="og:image" content="<?php echo e($ogImage ?? url('assets/images/' . getSetting('og_image', 'og-default.jpg'))); ?>">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    
+    <meta property="og:title" content="<?php echo e(($ogTitle ?? '') ?: $seoTitle); ?>">
+    <meta property="og:description" content="<?php echo e(($ogDescription ?? '') ?: $seoDesc); ?>">
+    <meta property="og:url" content="<?php echo e($seoCanonical); ?>">
+    <meta property="og:site_name" content="<?php echo e($seoSiteName); ?>">
+    <?php if ($ogImageUrl): ?>
+    <meta property="og:image" content="<?php echo e($ogImageUrl); ?>">
+    <meta property="og:image:alt" content="<?php echo e($seoSiteName); ?>">
+    <?php endif; ?>
+
     <!-- Twitter Card -->
     <meta name="twitter:card" content="<?php echo e($twitterCard ?? 'summary_large_image'); ?>">
-    <meta name="twitter:title" content="<?php echo e($ogTitle ?? ($pageTitle ?? getSetting('site_name_' . $lang))); ?>">
-    <meta name="twitter:description" content="<?php echo e($ogDescription ?? ($pageDescription ?? getSetting('default_meta_description_' . $lang))); ?>">
-    <meta name="twitter:image" content="<?php echo e($ogImage ?? url('assets/images/' . getSetting('og_image', 'og-default.jpg'))); ?>">
-    
+    <meta name="twitter:title" content="<?php echo e(($ogTitle ?? '') ?: $seoTitle); ?>">
+    <meta name="twitter:description" content="<?php echo e(($ogDescription ?? '') ?: $seoDesc); ?>">
+    <?php if ($ogImageUrl): ?><meta name="twitter:image" content="<?php echo e($ogImageUrl); ?>"><?php endif; ?>
+
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="<?php echo asset('images/' . getSetting('site_favicon', 'favicon.ico')); ?>">
-    
+    <link rel="icon" href="<?php echo asset('images/' . getSetting('site_favicon', 'favicon.ico')); ?>">
+    <?php if (getSetting('apple_touch_icon')): ?><link rel="apple-touch-icon" href="<?php echo asset('images/' . getSetting('apple_touch_icon')); ?>"><?php endif; ?>
+
     <!-- Fonts: driven by the "site_font" setting (admin > Settings > Site Font) -->
     <?php $siteFontKey = getSetting('site_font', 'Tajawal'); ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -61,13 +90,18 @@ $activePage = $activePage ?? '';
     <link rel="stylesheet" href="<?php echo asset('css/assistant.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset('css/assistant-robot.css'); ?>">
     
-    <!-- Schema -->
+    <!-- Structured data -->
+    <script type="application/ld+json"><?php echo json_encode(['@context' => 'https://schema.org', '@graph' => generateSiteGraphSchema()], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG); ?></script>
     <?php if (!empty($schemaMarkup)): ?>
-    <script type="application/ld+json">
-    <?php echo $schemaMarkup; ?>
-    </script>
+    <script type="application/ld+json"><?php echo str_replace('</', '<\/', $schemaMarkup); ?></script>
     <?php endif; ?>
-    
+
+    <?php if (getSetting('google_analytics_id')): $gaId = e(getSetting('google_analytics_id')); ?>
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo $gaId; ?>"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','<?php echo $gaId; ?>');</script>
+    <?php endif; ?>
+
     <!-- Theme initialization -->
     <script>
     (function() {

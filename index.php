@@ -17,7 +17,7 @@ $ogDescription = $seo['og_description'];
 $ogType = $seo['og_type'];
 $twitterCard = $seo['twitter_card'];
 $canonicalUrl = url();
-$schemaMarkup = generateLocalBusinessSchema();
+$schemaMarkup = ''; // Organization/LocalBusiness + WebSite are printed site-wide in includes/header.php
 
 // Fetch featured products
 $featuredProducts = Database::fetchAll(

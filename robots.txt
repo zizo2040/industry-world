@@ -1,12 +1,11 @@
+# عالم الصناعة لتجارة الكهرباء — industry-world.online
 User-agent: *
 Allow: /
-
-# Sitemap
-Sitemap: https://industry-world.online/sitemap.php
-
-# Disallow admin
 Disallow: /admin/
-Disallow: /admin
+Disallow: /ai-assistant/
+Disallow: /includes/
+Disallow: /database/
+Disallow: /logs/
+Disallow: /search.php
 
-# Crawl-delay
-Crawl-delay: 1
+Sitemap: https://industry-world.online/sitemap.php

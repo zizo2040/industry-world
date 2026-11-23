@@ -21,9 +21,24 @@ if ($categorySlug) {
 
 // SEO
 $seo = getSeoSettings('products');
-$pageTitle = $currentCategory ? ($currentCategory['meta_title_' . $lang] ?? $currentCategory['name_' . $lang] . ' - ' . getSetting('site_name_' . $lang)) : $seo['title'];
-$pageDescription = $currentCategory ? ($currentCategory['meta_description_' . $lang] ?? $currentCategory['description_' . $lang]) : $seo['description'];
-$canonicalUrl = url('products.php' . ($categorySlug ? '?category=' . $categorySlug : ''));
+$pageTitle = $currentCategory ? (($currentCategory['meta_title_' . $lang] ?? '') ?: ($currentCategory['name_' . $lang] . ' - ' . getSetting('site_name_' . $lang))) : $seo['title'];
+$pageDescription = $currentCategory ? (($currentCategory['meta_description_' . $lang] ?? '') ?: ($currentCategory['description_' . $lang] ?? '')) : $seo['description'];
+$canonicalUrl = url('products.php' . ($currentCategory ? '?category=' . rawurlencode($currentCategory['slug']) : ''));
+if ($currentCategory) {
+    $pageKeywords = implode('، ', array_filter([
+        $currentCategory['name_' . $lang],
+        ($lang === 'ar' ? 'بيع ' : 'buy ') . $currentCategory['name_' . $lang],
+        $currentCategory['name_' . $lang] . ($lang === 'ar' ? ' تعز' : ' Taiz'),
+        $currentCategory['name_' . $lang] . ($lang === 'ar' ? ' اليمن' : ' Yemen'),
+        getSetting('site_name_' . $lang),
+    ]));
+}
+// Paginated pages are distinct pages for search engines
+if (!empty($_GET['page']) && (int) $_GET['page'] > 1) {
+    $canonicalUrl .= (str_contains($canonicalUrl, '?') ? '&' : '?') . 'page=' . (int) $_GET['page'];
+}
+// Unknown category slug → noindex instead of duplicating the main listing
+if ($categorySlug && !$currentCategory) { $robotsMeta = 'noindex,follow'; }
 
 // Pagination
 $page = max(1, intval($_GET['page'] ?? 1));

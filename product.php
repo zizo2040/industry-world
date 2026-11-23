@@ -24,37 +24,58 @@ $product = Database::fetchOne(
 );
 
 if (!$product) {
-    http_response_code(404);
-    header('Location: ' . url('404.php'));
+    // Real 404 status (not a redirect) so search engines drop dead product URLs
+    require __DIR__ . '/404.php';
     exit;
 }
 
 // SEO
-$pageTitle = $product['meta_title_' . $lang] ?? $product['name_' . $lang] . ' - ' . getSetting('site_name_' . $lang);
-$pageDescription = $product['meta_description_' . $lang] ?? $product['short_description_' . $lang];
-$canonicalUrl = url('product.php?slug=' . $slug);
+$pageTitle = ($product['meta_title_' . $lang] ?? '') ?: ($product['name_' . $lang] . ' | ' . ($product['category_name'] ?? '') . ' - ' . getSetting('site_name_' . $lang));
+$pageDescription = ($product['meta_description_' . $lang] ?? '') ?: (($product['short_description_' . $lang] ?? '') ?: mb_substr(strip_tags((string) ($product['description_' . $lang] ?? '')), 0, 160));
+if (mb_strlen($pageDescription) < 70) {
+    $pageDescription = trim($pageDescription . ' ' . ($lang === 'ar'
+        ? 'متوفر لدى ' . getSetting('site_name_ar') . ' في تعز - الحوبان، مع التوصيل لجميع المحافظات. اطلب السعر عبر واتساب.'
+        : 'Available at ' . getSetting('site_name_en') . ' in Taiz, Yemen with nationwide delivery. Get the price on WhatsApp.'));
+}
+$pageKeywords = implode('، ', array_filter([$product['name_' . $lang], $product['category_name'] ?? '', $product['sku'] ?? '', getSetting('site_name_' . $lang), $lang === 'ar' ? 'تعز' : 'Taiz', $lang === 'ar' ? 'اليمن' : 'Yemen']));
+$canonicalUrl = url('product.php?slug=' . rawurlencode($slug));
+$ogType = 'product';
+if (!empty($product['main_image'])) $ogImage = uploadUrl($product['main_image']);
 
-// Schema
+// Schema: Product + BreadcrumbList
 $productSchema = [
-    '@context' => 'https://schema.org',
     '@type' => 'Product',
+    '@id' => $canonicalUrl . '#product',
     'name' => $product['name_' . $lang],
-    'description' => $product['description_' . $lang] ?? '',
-    'image' => $product['main_image'] ? uploadUrl($product['main_image']) : '',
-    'sku' => $product['sku'] ?? '',
+    'description' => $pageDescription,
+    'url' => $canonicalUrl,
     'category' => $product['category_name'] ?? '',
-    'offers' => [
-        '@type' => 'Offer',
-        'priceCurrency' => $product['currency'] ?? 'YER',
-        'price' => $product['price'] ?? '',
-        'availability' => $product['stock_status'] === 'in_stock' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
-    ],
-    'brand' => [
-        '@type' => 'Brand',
-        'name' => getSetting('site_name_' . $lang)
-    ]
 ];
-$schemaMarkup = json_encode($productSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+if (!empty($product['main_image'])) $productSchema['image'] = [uploadUrl($product['main_image'])];
+if (!empty($product['sku'])) { $productSchema['sku'] = $product['sku']; $productSchema['mpn'] = $product['sku']; }
+$availability = [
+    'in_stock' => 'https://schema.org/InStock', 'low_stock' => 'https://schema.org/LimitedAvailability',
+    'out_of_stock' => 'https://schema.org/OutOfStock', 'on_demand' => 'https://schema.org/PreOrder',
+][$product['stock_status'] ?? 'in_stock'] ?? 'https://schema.org/InStock';
+if (!empty($product['price']) && (float) $product['price'] > 0) {
+    $productSchema['offers'] = [
+        '@type' => 'Offer',
+        'url' => $canonicalUrl,
+        'priceCurrency' => $product['currency'] ?: 'YER',
+        'price' => (string) (float) $product['price'],
+        'availability' => $availability,
+        'itemCondition' => 'https://schema.org/NewCondition',
+        'seller' => ['@id' => SITE_URL . '/#business'],
+    ];
+}
+$breadcrumbSchema = json_decode(generateBreadcrumbSchema(array_values(array_filter([
+    ['name' => __('nav_home'), 'url' => url()],
+    ['name' => __('nav_products'), 'url' => url('products.php')],
+    !empty($product['category_slug']) ? ['name' => $product['category_name'], 'url' => url('products.php?category=' . $product['category_slug'])] : null,
+    ['name' => $product['name_' . $lang], 'url' => $canonicalUrl],
+]))), true);
+unset($breadcrumbSchema['@context']);
+$schemaMarkup = json_encode(['@context' => 'https://schema.org', '@graph' => [$productSchema, $breadcrumbSchema]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
 // Fetch specifications
 $specs = Database::fetchAll(
