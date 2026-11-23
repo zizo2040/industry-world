@@ -154,7 +154,19 @@
             
             // Close on Escape
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') this.close();
+                if (e.key === 'Escape' && menu.classList.contains('active')) this.close();
+            });
+
+            // Pages restored from the back/forward cache keep their DOM state;
+            // make sure the panel is never left open (or the body left locked)
+            // when the visitor comes back to a page.
+            window.addEventListener('pageshow', (e) => {
+                if (e.persisted || menu.classList.contains('active')) this.close(true);
+            });
+
+            // Close the drawer when growing to the desktop layout.
+            window.matchMedia('(min-width: 992px)').addEventListener?.('change', (mq) => {
+                if (mq.matches && menu.classList.contains('active')) this.close();
             });
         },
         
@@ -177,8 +189,9 @@
             document.body.style.top = `-${this._scrollY}px`;
         },
         
-        close() {
+        close(skipScrollRestore) {
             const menu = document.querySelector('.nav-menu');
+            const wasOpen = menu && menu.classList.contains('active');
             const toggle = document.querySelector('.menu-toggle');
             const overlay = document.querySelector('.mobile-menu-overlay');
             
@@ -190,9 +203,10 @@
             if (overlay) overlay.classList.remove('active');
             document.body.classList.remove('menu-open');
             document.body.style.top = '';
-            if (typeof this._scrollY === 'number') {
-                window.scrollTo(0, this._scrollY);
+            if (wasOpen && !skipScrollRestore && typeof this._scrollY === 'number') {
+                window.scrollTo({ top: this._scrollY, behavior: 'instant' });
             }
+            this._scrollY = null;
         }
     };
 

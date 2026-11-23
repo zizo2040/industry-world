@@ -157,6 +157,11 @@
 
 html {
   scroll-behavior: smooth;
+  /* Never allow sideways panning: an element that is a few px too wide
+     (or an off-canvas panel parked beside the viewport) must not make the
+     whole page horizontally scrollable on phones. */
+  overflow-x: hidden;
+  scroll-padding-top: calc(var(--header-height) + var(--ad-bar-height) + 16px);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -168,6 +173,8 @@ body {
   line-height: 1.6;
   direction: rtl;
   min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
   transition: background-color var(--transition-base), color var(--transition-base);
 }
 
@@ -1145,7 +1152,6 @@ textarea.form-control {
 @media (max-width: 768px) {
   :root {
     --container-padding: 1rem;
-    --header-height: 64px;
   }
   
   .section { padding: var(--space-12) 0; }
@@ -1169,4 +1175,18 @@ textarea.form-control {
   }
   
   .section { padding: var(--space-10) 0; }
+}
+
+
+/* Clip (not scroll) horizontally at the main wrapper so reveal-left/right
+   start offsets and decorative shapes can never widen the page. */
+@supports (overflow: clip) {
+  html, body { overflow-x: clip; }
+  .main-content { overflow-x: clip; }
+}
+
+/* Every page clears the fixed header + ad bar in exactly ONE place. */
+.main-content {
+  display: block;
+  padding-top: calc(var(--header-height) + var(--ad-bar-height));
 }

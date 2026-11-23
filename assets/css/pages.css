@@ -9,8 +9,10 @@
 
 .hero {
   position: relative;
-  margin-top: calc(var(--header-height) + var(--ad-bar-height) + var(--space-6));
-  min-height: calc(100vh - var(--header-height) - var(--ad-bar-height) - var(--space-6));
+  margin-top: 0;
+  padding: clamp(2.5rem, 6vw, 5rem) 0;
+  min-height: calc(100vh - var(--header-height) - var(--ad-bar-height));
+  min-height: calc(100svh - var(--header-height) - var(--ad-bar-height));
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -197,13 +199,13 @@
 }
 
 .hero-floating-card.card-1 {
-  top: -20px;
-  left: -20px;
+  top: 16px;
+  left: -12px;
 }
 
 .hero-floating-card.card-2 {
   bottom: 20px;
-  right: -20px;
+  right: -12px;
   animation-delay: -2s;
 }
 
@@ -1196,7 +1198,7 @@ body {
   width: 100%;
   overflow: hidden;
   background: var(--color-bg-alt);
-  margin-top: calc(var(--header-height) + var(--ad-bar-height) + var(--space-6));
+  margin-top: 0;
 }
 
 .page-banner img {
@@ -1279,7 +1281,7 @@ body {
    ============================================================ */
 
 .product-detail {
-  padding-top: calc(var(--header-height) + var(--ad-bar-height) + var(--space-8) + var(--space-6));
+  padding-top: var(--space-10);
 }
 
 .product-detail-grid {
@@ -1620,7 +1622,7 @@ body {
    ============================================================ */
 
 .page-header {
-  padding: calc(var(--header-height) + var(--ad-bar-height) + var(--space-10)) 0 var(--space-8);
+  padding: var(--space-12) 0 var(--space-10);
   background: linear-gradient(135deg, var(--color-bg-alt) 0%, var(--color-bg) 100%);
   border-bottom: 1px solid var(--color-border);
 }
@@ -1745,9 +1747,10 @@ body {
   }
   
   .hero-visual {
-    order: -1;
-    max-width: 600px;
+    max-width: 560px;
+    width: 100%;
     margin: 0 auto;
+    padding: 0 12px;
   }
   
   .features-grid {
