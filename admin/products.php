@@ -100,7 +100,11 @@ if ($action === 'edit' && $id) {
 }
 
 // Get categories for dropdown
-$categories = Database::fetchAll("SELECT id, name_{$lang} as name FROM categories WHERE is_active = 1 ORDER BY sort_order");
+$categories = Database::fetchAll("SELECT id, parent_id, name_{$lang} as name FROM categories WHERE deleted_at IS NULL ORDER BY sort_order, id");
+// Group sub-categories under their main section for the dropdown
+$categoryTree = [];
+foreach ($categories as $c) { if (empty($c['parent_id'])) $categoryTree[$c['id']] = ['cat' => $c, 'children' => []]; }
+foreach ($categories as $c) { if (!empty($c['parent_id']) && isset($categoryTree[$c['parent_id']])) $categoryTree[$c['parent_id']]['children'][] = $c; }
 
 // Pagination
 $page = max(1, intval($_GET['page'] ?? 1));
@@ -153,8 +157,13 @@ include __DIR__ . '/includes/header.php';
                 <label class="form-label"><?php echo $lang === 'ar' ? 'الفئة' : 'Category'; ?> <span class="required">*</span></label>
                 <select name="category_id" class="form-control" required>
                     <option value=""><?php echo $lang === 'ar' ? 'اختر الفئة' : 'Select Category'; ?></option>
-                    <?php foreach ($categories as $cat): ?>
-                    <option value="<?php echo $cat['id']; ?>" <?php echo ($product['category_id'] ?? '') == $cat['id'] ? 'selected' : ''; ?>><?php echo e($cat['name']); ?></option>
+                    <?php foreach ($categoryTree as $node): $root = $node['cat']; ?>
+                    <optgroup label="<?php echo e($root['name']); ?>">
+                        <option value="<?php echo $root['id']; ?>" <?php echo ($product['category_id'] ?? '') == $root['id'] ? 'selected' : ''; ?>><?php echo e($root['name']); ?> — <?php echo $lang === 'ar' ? 'عام' : 'general'; ?></option>
+                        <?php foreach ($node['children'] as $cat): ?>
+                        <option value="<?php echo $cat['id']; ?>" <?php echo ($product['category_id'] ?? '') == $cat['id'] ? 'selected' : ''; ?>><?php echo e($cat['name']); ?></option>
+                        <?php endforeach; ?>
+                    </optgroup>
                     <?php endforeach; ?>
                 </select>
             </div>

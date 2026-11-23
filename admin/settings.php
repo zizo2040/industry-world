@@ -24,10 +24,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'whatsapp_primary', 'whatsapp_secondary_1', 'whatsapp_secondary_2',
             'contact_phone',
             'facebook_url', 'twitter_url', 'instagram_url',
+            'working_hours_ar', 'working_hours_en', 'ad_bar_items_ar', 'ad_bar_items_en',
+            'google_analytics_id', 'site_verification_google', 'site_verification_bing',
+            'youtube_url', 'tiktok_url',
         ];
         
         foreach ($textSettings as $key) {
-            $value = $_POST[$key] ?? '';
+            $value = trim((string) ($_POST[$key] ?? ''));
+            if ($key === 'google_analytics_id') $value = preg_replace('/[^A-Za-z0-9\-]/', '', $value);
+            if (str_starts_with($key, 'site_verification_')) {
+                // accept either the bare token or the full <meta ... content="TOKEN"> tag
+                if (preg_match('/content=["\']([^"\']+)["\']/', $value, $m)) $value = $m[1];
+                $value = preg_replace('/[^A-Za-z0-9_\-]/', '', $value);
+            }
             Database::query(
                 "INSERT INTO site_settings (setting_key, setting_value) VALUES (:key, :value) 
                  ON DUPLICATE KEY UPDATE setting_value = :value",
@@ -426,6 +435,52 @@ include __DIR__ . '/includes/header.php';
                 </div>
             </div>
             
+            <div class="admin-form-grid">
+                <div class="form-group">
+                    <label class="form-label"><?php echo $lang === 'ar' ? 'ساعات العمل (عربي)' : 'Working hours (Arabic)'; ?></label>
+                    <input type="text" name="working_hours_ar" class="form-control" value="<?php echo e(getSetting('working_hours_ar')); ?>" placeholder="السبت – الخميس: 8 ص – 10 م، الجمعة: 2 ظ – 10 م">
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><?php echo $lang === 'ar' ? 'ساعات العمل (إنجليزي)' : 'Working hours (English)'; ?></label>
+                    <input type="text" name="working_hours_en" class="form-control" dir="ltr" value="<?php echo e(getSetting('working_hours_en')); ?>">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><?php echo $lang === 'ar' ? 'رسائل الشريط الإعلاني (عربي) — افصل بين الرسائل بـ |' : 'Announcement bar messages (Arabic) — separate with |'; ?></label>
+                <textarea name="ad_bar_items_ar" class="form-control" rows="2"><?php echo e(getSetting('ad_bar_items_ar')); ?></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label"><?php echo $lang === 'ar' ? 'رسائل الشريط الإعلاني (إنجليزي) — افصل بين الرسائل بـ |' : 'Announcement bar messages (English) — separate with |'; ?></label>
+                <textarea name="ad_bar_items_en" class="form-control" rows="2" dir="ltr"><?php echo e(getSetting('ad_bar_items_en')); ?></textarea>
+            </div>
+
+            <h3 style="margin:var(--space-6) 0 var(--space-4);color:var(--color-primary);font-size:1.05rem;border-bottom:2px solid var(--color-border);padding-bottom:var(--space-3);">
+                📈 <?php echo $lang === 'ar' ? 'التحليلات وأدوات مشرفي المواقع' : 'Analytics & Webmaster Tools'; ?>
+            </h3>
+            <div class="admin-form-grid">
+                <div class="form-group">
+                    <label class="form-label">Google Analytics 4 (Measurement ID)</label>
+                    <input type="text" name="google_analytics_id" class="form-control" dir="ltr" placeholder="G-XXXXXXXXXX" value="<?php echo e(getSetting('google_analytics_id')); ?>">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Google Search Console <?php echo $lang === 'ar' ? '(رمز التحقق)' : '(verification)'; ?></label>
+                    <input type="text" name="site_verification_google" class="form-control" dir="ltr" placeholder="google-site-verification token" value="<?php echo e(getSetting('site_verification_google')); ?>">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Bing Webmaster <?php echo $lang === 'ar' ? '(رمز التحقق)' : '(verification)'; ?></label>
+                    <input type="text" name="site_verification_bing" class="form-control" dir="ltr" value="<?php echo e(getSetting('site_verification_bing')); ?>">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">TikTok URL</label>
+                    <input type="url" name="tiktok_url" class="form-control" dir="ltr" value="<?php echo e(getSetting('tiktok_url')); ?>">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">YouTube URL</label>
+                    <input type="url" name="youtube_url" class="form-control" dir="ltr" value="<?php echo e(getSetting('youtube_url')); ?>">
+                </div>
+            </div>
+
             <div class="admin-form-grid">
                 <div class="form-group">
                     <label class="form-label"><?php echo $lang === 'ar' ? 'البريد الإلكتروني' : 'Email'; ?></label>

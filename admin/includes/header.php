@@ -18,9 +18,11 @@ $adminPage = $adminPage ?? '';
     <title><?php echo e($pageTitle ?? ($lang === 'ar' ? 'لوحة التحكم' : 'Dashboard')); ?></title>
     <link rel="icon" type="image/x-icon" href="<?php echo asset('images/' . getSetting('site_favicon', 'favicon.ico')); ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="robots" content="noindex,nofollow">
     <link rel="stylesheet" href="<?php echo asset('css/main.css'); ?>">
-    <link rel="stylesheet" href="<?php echo adminUrl('assets/css/admin.css'); ?>">
+    <link rel="stylesheet" href="<?php echo adminUrl('assets/css/admin.css'); ?>?v=<?php echo @filemtime(__DIR__ . '/../assets/css/admin.css'); ?>">
     <script>
     (function() {
         var theme = localStorage.getItem('theme') || 'light';
@@ -34,9 +36,14 @@ $adminPage = $adminPage ?? '';
         <aside class="admin-sidebar" id="admin-sidebar">
             <div class="admin-sidebar-header">
                 <a href="<?php echo adminUrl('index.php'); ?>" class="admin-sidebar-logo">
-                    <div class="admin-sidebar-logo-icon">A</div>
+                    <div class="admin-sidebar-logo-icon">
+                        <svg viewBox="0 0 40 40" width="20" height="20" fill="none"><path d="M22 4L8 22H20L18 36L32 18H20L22 4Z" fill="white"/></svg>
+                    </div>
                     <span><?php echo e(getSetting('site_name_' . $lang)); ?></span>
                 </a>
+                <button type="button" class="admin-sidebar-close" id="admin-sidebar-close" aria-label="<?php echo $lang === 'ar' ? 'إغلاق القائمة' : 'Close menu'; ?>">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
             
             <nav>
@@ -127,13 +134,18 @@ $adminPage = $adminPage ?? '';
             </div>
         </aside>
         
+        <div class="admin-sidebar-overlay" id="admin-sidebar-overlay" aria-hidden="true"></div>
+
         <!-- Main -->
         <div class="admin-main">
             <!-- Header -->
             <header class="admin-header">
-                <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('admin-sidebar').classList.toggle('active')" style="display:none;background:none;border:none;color:var(--color-text-secondary);width:36px;height:36px;align-items:center;justify-content:center;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                </button>
+                <div class="admin-header-start">
+                    <button type="button" class="admin-menu-toggle" id="admin-menu-toggle" aria-label="<?php echo $lang === 'ar' ? 'القائمة' : 'Menu'; ?>" aria-controls="admin-sidebar" aria-expanded="false">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                    <span class="admin-header-title"><?php echo e(preg_replace('/\s+-\s+.*$/u', '', $pageTitle ?? ($lang === 'ar' ? 'لوحة التحكم' : 'Dashboard'))); ?></span>
+                </div>
                 
                 <div class="admin-header-actions">
                     <button class="admin-header-btn theme-toggle" aria-label="Toggle theme">
@@ -143,7 +155,7 @@ $adminPage = $adminPage ?? '';
                     <a href="<?php echo url(); ?>" target="_blank" class="admin-header-btn" aria-label="View site">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                     </a>
-                    <div class="admin-user">
+                    <div class="admin-user" title="<?php echo e($user['full_name'] ?? ''); ?>">
                         <div class="admin-user-avatar"><?php echo mb_substr($user['full_name'] ?? 'A', 0, 1); ?></div>
                         <span class="admin-user-name"><?php echo e($user['full_name'] ?? ''); ?></span>
                     </div>
