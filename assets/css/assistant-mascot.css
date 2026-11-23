@@ -1,0 +1,193 @@
+/**
+ * AI Assistant - Peeking Mascot (بومت)
+ *
+ * روبوت صغير يظهر "من خلف" العناصر (الأزرار، الشعار، العناصر التفاعلية)
+ * مع فقاعة نص توضيحية أو سؤال متعلق بالعنصر. يعتمد على نفس متغيرات
+ * الألوان المستخدمة في assistant.css (--ai-primary, --ai-surface, ...).
+ */
+
+:root {
+    --ai-mascot-z: 500; /* أقل من نافذة المحادثة والزر العائم، أعلى من محتوى الصفحة */
+    --ai-mascot-size: 46px;
+}
+
+/* ============================================================
+   الحاوية العائمة للروبوت
+   ============================================================ */
+.ai-mascot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--ai-mascot-size);
+    height: 54px;
+    z-index: var(--ai-mascot-z);
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(0, -14px) scale(0.55);
+    transform-origin: bottom center;
+    transition:
+        transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.35s ease;
+    will-change: transform, opacity;
+}
+
+.ai-mascot.is-visible {
+    opacity: 1;
+    transform: translate(var(--ai-mascot-shift-x, 10px), 10px) scale(1);
+}
+
+.ai-mascot.is-side-left.is-visible {
+    transform: translate(calc(-1 * var(--ai-mascot-shift-x, 10px)), 10px) scale(1);
+}
+
+/* الروبوت نفسه (نفس تصميم زر المحادثة، بحجم أصغر) */
+.ai-mascot-robot {
+    width: 100%;
+    height: 100%;
+    color: var(--ai-surface, #ffffff);
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
+}
+
+.ai-mascot.is-visible .ai-mascot-eye {
+    animation: ai-mascot-blink 4.2s linear infinite;
+}
+
+.ai-mascot.is-visible .ai-mascot-arm {
+    animation: ai-mascot-wave 1.4s ease-in-out infinite;
+    transform-origin: 40px 40px;
+}
+
+@keyframes ai-mascot-wave {
+    0%, 100% { transform: rotate(0deg); }
+    50%      { transform: rotate(-22deg); }
+}
+
+@keyframes ai-mascot-blink {
+    0%, 92%, 100% { transform: scaleY(1); }
+    96%           { transform: scaleY(0.1); }
+}
+
+/* ============================================================
+   فقاعة النص
+   ============================================================ */
+.ai-mascot-bubble {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    inset-inline-start: 50%;
+    transform: translateX(-50%) translateY(6px) scale(0.9);
+    min-width: 190px;
+    max-width: 250px;
+    background: var(--ai-surface, #fff);
+    color: var(--ai-text, #1a202c);
+    border: 1px solid var(--ai-border, #dde3ec);
+    border-radius: var(--ai-radius-sm, 8px);
+    padding: 10px 14px;
+    box-shadow: var(--ai-shadow, 0 8px 32px rgba(0,0,0,.12));
+    font-size: 0.86rem;
+    line-height: 1.5;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+    text-align: start;
+}
+
+[dir="rtl"] .ai-mascot-bubble { transform: translateX(50%) translateY(6px) scale(0.9); }
+
+.ai-mascot.is-visible .ai-mascot-bubble {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+    pointer-events: auto;
+    transition-delay: 0.15s;
+}
+
+[dir="rtl"] .ai-mascot.is-visible .ai-mascot-bubble {
+    transform: translateX(50%) translateY(0) scale(1);
+}
+
+/* عندما تكون الفقاعة أسفل الروبوت (قرب أعلى الصفحة) */
+.ai-mascot-bubble.is-below {
+    bottom: auto;
+    top: calc(100% + 10px);
+}
+
+/* السهم الصغير */
+.ai-mascot-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    inset-inline-start: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    background: var(--ai-surface, #fff);
+    border-inline-end: 1px solid var(--ai-border, #dde3ec);
+    border-bottom: 1px solid var(--ai-border, #dde3ec);
+}
+
+.ai-mascot-bubble.is-below::after {
+    bottom: auto;
+    top: -6px;
+    transform: translateX(-50%) rotate(225deg);
+}
+
+.ai-mascot-bubble-text {
+    margin: 0;
+    padding-inline-end: 16px;
+}
+
+.ai-mascot-bubble-close {
+    position: absolute;
+    top: 4px;
+    inset-inline-end: 6px;
+    width: 18px;
+    height: 18px;
+    border: none;
+    background: transparent;
+    color: var(--ai-text-muted, #6b7280);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-mascot-bubble-close:hover {
+    background: var(--ai-surface-alt, #f4f6f9);
+    color: var(--ai-text, #1a202c);
+}
+
+/* ============================================================
+   الوضع الداكن يرث تلقائياً من متغيرات assistant.css
+   ============================================================ */
+
+/* ============================================================
+   الموبايل: تصغير بسيط وتقييد عرض الفقاعة
+   ============================================================ */
+@media (max-width: 640px) {
+    :root { --ai-mascot-size: 38px; }
+    .ai-mascot-bubble {
+        max-width: 200px;
+        font-size: 0.82rem;
+    }
+}
+
+/* ============================================================
+   تقليل الحركة لمن يفضل ذلك
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    .ai-mascot {
+        transition: opacity 0.3s ease;
+        transform: translate(var(--ai-mascot-shift-x, 10px), 10px) scale(1) !important;
+    }
+    .ai-mascot-robot,
+    .ai-mascot.is-visible .ai-mascot-eye,
+    .ai-mascot.is-visible .ai-mascot-arm {
+        animation: none !important;
+    }
+    .ai-mascot-bubble {
+        transition: opacity 0.2s ease;
+    }
+}

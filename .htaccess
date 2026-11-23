@@ -1,0 +1,9 @@
+# Industry World - Apache config (InfinityFree)
+DirectoryIndex index.php
+ErrorDocument 404 /404.php
+Options -Indexes
+
+# Block sensitive files
+<FilesMatch "(^config(\.local)?\.php$|\.(md|sql|log)$)">
+    Require all denied
+</FilesMatch>

@@ -1,0 +1,1053 @@
+/**
+ * Header & Navigation Styles - Updated
+ * - Tajawal font
+ * - Full-screen off-canvas mobile menu (all breakpoints)
+ * - Light bulb theme toggle
+ * - Globe+code language button
+ * - Header bar limited to: hamburger, logo, language, theme
+ * - Animated logo tagline
+ */
+
+/* ============================================================
+   FONT OVERRIDE: TAJAWAL
+   ============================================================ */
+:root {
+  --font-primary: 'Tajawal', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+body,
+.nav-link,
+.nav-dropdown-item,
+.header-btn,
+.lang-code,
+.mobile-action-label,
+.mobile-action-btn {
+  font-family: var(--font-primary);
+}
+
+/* ============================================================
+   HEADER BASE
+   ============================================================ */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-height);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+  z-index: var(--z-sticky);
+  transition: all var(--transition-base);
+}
+
+[data-theme="dark"] .header {
+  background: rgba(15, 17, 23, 0.95);
+  border-bottom-color: var(--color-border);
+}
+
+.header.scrolled {
+  box-shadow: var(--shadow-md);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  gap: var(--space-3);
+}
+
+/* ============================================================
+   AD BAR (Advertising / Announcement Bar)
+   Fixed directly beneath the header, on every page, so it acts as
+   a clear visual separator between the header and whatever comes
+   next — the hero section on the home page, or the page banner
+   everywhere else. Content scrolls continuously (duplicated once
+   for a seamless loop); pauses automatically for users who prefer
+   reduced motion.
+   ============================================================ */
+.ad-bar {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  right: 0;
+  height: var(--ad-bar-height);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  background: var(--gradient-electric);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-sm);
+  z-index: calc(var(--z-sticky) - 1);
+}
+
+.ad-bar-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: ad-bar-scroll 26s linear infinite;
+  will-change: transform;
+}
+
+.ad-bar:hover .ad-bar-track {
+  animation-play-state: paused;
+}
+
+.ad-bar-group {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ad-bar-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-6);
+  white-space: nowrap;
+  color: var(--color-text-inverse);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.ad-bar-item + .ad-bar-item {
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.ad-bar-icon {
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+@keyframes ad-bar-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ad-bar-track {
+    animation: none;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .ad-bar-item {
+    padding: 0 var(--space-4);
+    font-size: 0.75rem;
+  }
+}
+
+/* ============================================================
+   LOGO
+   ============================================================ */
+.header-logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 100%;
+  flex-shrink: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* Protruding circular logo: top half sits in the header, bottom half
+   pokes out past the header's bottom edge (intentional overflow). */
+.logo-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 76px;
+  height: 76px;
+  transform: translate(-50%, -28%);
+  z-index: 2;
+  transition: transform var(--transition-base);
+}
+
+.header-logo:hover .logo-circle {
+  transform: translate(-50%, -28%) scale(1.04);
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--color-bg-elevated);
+  border-radius: 50%;
+  border: 3px solid var(--color-bg-elevated);
+  box-shadow: var(--shadow-primary);
+}
+
+.logo-icon {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  border-radius: 50%;
+  border: 3px solid var(--color-bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.logo-icon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+  border-radius: inherit;
+}
+
+/* ============================================================
+   LOGO TOOLTIP BUBBLE
+   ============================================================ */
+.logo-tooltip {
+  position: absolute;
+  top: 100%;
+  margin-top: 14px;
+  min-width: 200px;
+  max-width: min(85vw, 260px);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-3) var(--space-4);
+  text-align: center;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(0.9);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+  z-index: 30;
+}
+
+[dir="rtl"] .logo-tooltip {
+  right: 0;
+  left: auto;
+  transform-origin: top right;
+}
+
+[dir="ltr"] .logo-tooltip {
+  left: 0;
+  right: auto;
+  transform-origin: top left;
+}
+
+.logo-tooltip-title {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  font-family: var(--font-primary);
+  margin-bottom: 2px;
+}
+
+.logo-tooltip-tagline {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-family: var(--font-primary);
+  line-height: 1.4;
+}
+
+.header-logo:hover .logo-tooltip,
+.header-logo:focus-within .logo-tooltip,
+.header-logo.tooltip-active .logo-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+/* ============================================================
+   NAVIGATION (Off-canvas panel - full screen, all breakpoints)
+   Lives as a sibling of <header> in the markup (see includes/header.php)
+   so nothing about the header (fixed position, backdrop-filter, etc.)
+   can create a containing block that clips it. Sized directly against
+   the viewport, not any ancestor, so it always covers the full screen.
+   ============================================================ */
+.nav-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh; /* accounts for mobile browser UI chrome; falls back to 100vh above */
+  max-width: 100%;
+  background: var(--color-bg-elevated);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: var(--space-6);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-xl);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  z-index: 9999;
+}
+
+/* RTL (default/Arabic): slide in from the right */
+/* LTR: slide in from the left */
+[dir="ltr"] .nav-menu {
+  transform: translateX(-100%);
+}
+
+.nav-menu.active {
+  transform: translateX(0);
+}
+
+.nav-menu-list {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-1);
+  width: 100%;
+  list-style: none;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  font-family: var(--font-primary);
+}
+
+.nav-link:hover {
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb), 0.06);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.nav-link.active {
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb), 0.09);
+  border-color: var(--color-primary);
+}
+
+/* Dropdown */
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown-toggle::after {
+  content: '';
+  width: 14px;
+  height: 14px;
+  margin-inline-start: var(--space-2);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: contain;
+  transition: transform var(--transition-fast);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.nav-dropdown.open .nav-dropdown-toggle::after {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  font-family: var(--font-primary);
+}
+
+.nav-dropdown-item:hover {
+  background: rgba(var(--color-primary-rgb), 0.06);
+  color: var(--color-primary);
+}
+
+/* ============================================================
+   DESKTOP-ONLY HEADER ELEMENTS (hidden by default / on mobile)
+   Revealed only inside the @media (min-width: 992px) block below,
+   so mobile header markup/behavior is completely unaffected.
+   ============================================================ */
+.header-desktop-text,
+.header-desktop-nav,
+.header-contact-flip {
+  display: none;
+}
+
+/* ============================================================
+   HEADER ACTIONS
+   ============================================================ */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.header-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+  position: relative;
+  padding: 0 var(--space-2);
+  gap: 4px;
+}
+
+.header-btn:hover {
+  background: var(--color-bg-alt);
+  color: var(--color-primary);
+}
+
+/* ============================================================
+   LANGUAGE BUTTON: Globe + Code
+   ============================================================ */
+.lang-toggle {
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  gap: 4px;
+  font-family: var(--font-primary);
+}
+
+.lang-toggle:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.globe-icon {
+  flex-shrink: 0;
+}
+
+.lang-code {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ============================================================
+   LIGHT BULB THEME TOGGLE
+   - Light mode: bulb is "off" - plain outline, muted color, no glow.
+   - Dark mode: bulb is "on" - filled yellow/gold with a soft glow.
+   ============================================================ */
+.bulb-btn {
+  width: 42px;
+  padding: 4px;
+}
+
+.bulb-svg {
+  display: block;
+  transition: filter var(--transition-base), color var(--transition-base);
+}
+
+.bulb-glass,
+.bulb-filament {
+  transition: fill var(--transition-base), stroke var(--transition-base), opacity var(--transition-base);
+}
+
+.bulb-rays {
+  transition: opacity var(--transition-base);
+  opacity: 0;
+}
+
+/* Light mode: bulb "off" - outline only, no fill, no glow */
+[data-theme="light"] .bulb-svg {
+  color: var(--color-text-secondary);
+  filter: none;
+}
+
+[data-theme="light"] .bulb-glass {
+  fill: none;
+}
+
+[data-theme="light"] .bulb-filament {
+  opacity: 0.55;
+}
+
+[data-theme="light"] .bulb-rays {
+  opacity: 0;
+}
+
+/* Dark mode: bulb "on" - filled gold, glowing */
+[data-theme="dark"] .bulb-svg {
+  color: #ffc94d;
+  filter: drop-shadow(0 0 6px rgba(255, 201, 77, 0.65));
+}
+
+[data-theme="dark"] .bulb-glass {
+  fill: rgba(255, 201, 77, 0.35);
+  stroke: #ffc94d;
+}
+
+[data-theme="dark"] .bulb-filament {
+  stroke: #ffc94d;
+  opacity: 1;
+}
+
+[data-theme="dark"] .bulb-rays {
+  opacity: 1;
+}
+
+/* ============================================================
+   MOBILE MENU TOGGLE
+   ============================================================ */
+.menu-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--color-text-primary);
+  transition: all var(--transition-base);
+  border-radius: 2px;
+}
+
+.menu-toggle.active span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* ============================================================
+   MOBILE MENU OVERLAY (background dim)
+   ============================================================ */
+.mobile-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9998;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-base);
+}
+
+.mobile-menu-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ============================================================
+   BODY SCROLL LOCK (while the mobile menu is open)
+   Locking with overflow:hidden alone doesn't work reliably on iOS
+   Safari; pinning body with position:fixed + a full inset prevents
+   background scroll/bounce on both Android and iOS.
+   ============================================================ */
+body.menu-open {
+  overflow: hidden;
+  height: 100vh;
+  position: fixed;
+  width: 100%;
+}
+
+/* ============================================================
+   SEARCH OVERLAY
+   ============================================================ */
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-base);
+}
+
+.search-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.search-container {
+  width: 90%;
+  max-width: 700px;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  transform: translateY(-20px);
+  transition: transform var(--transition-base);
+}
+
+.search-overlay.active .search-container {
+  transform: translateY(0);
+}
+
+.search-form {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.search-input {
+  flex: 1;
+  padding: var(--space-4);
+  font-size: 1.125rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
+  box-shadow: var(--shadow-neu-inset);
+  transition: all var(--transition-base);
+}
+
+.search-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-neu-inset), 0 0 0 3px rgba(var(--color-primary-rgb), 0.12);
+  outline: none;
+}
+
+.search-close {
+  position: absolute;
+  top: var(--space-6);
+  left: var(--space-6);
+  color: white;
+  font-size: 1.5rem;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.search-close:hover {
+  opacity: 1;
+}
+
+/* ============================================================
+   MOBILE NAV PANEL STYLES
+   ============================================================ */
+
+/* Mobile header inside nav panel - always visible; the panel itself
+   is used at every breakpoint now (see .nav-menu above) */
+.nav-mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-3);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  margin: calc(var(--space-6) * -1) calc(var(--space-6) * -1) var(--space-4);
+  padding: var(--space-5) var(--space-6);
+}
+
+.nav-mobile-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: white;
+  font-weight: 800;
+  font-size: 0.95rem;
+  font-family: var(--font-primary);
+}
+
+.nav-mobile-logo-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.2);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.nav-mobile-logo-icon-img {
+  background: rgba(255,255,255,0.12);
+}
+
+.nav-mobile-logo-icon-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+
+.nav-close-btn {
+  color: white;
+  opacity: 0.85;
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.nav-close-btn:hover {
+  opacity: 1;
+  background: rgba(255,255,255,0.2);
+}
+
+/* Mobile panel footer actions - pinned to the very bottom of the panel */
+.nav-mobile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.mobile-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-alt);
+  border: 2px solid var(--color-border);
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  font-family: var(--font-primary);
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+}
+
+.mobile-action-btn:hover {
+  background: rgba(var(--color-primary-rgb), 0.06);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.mobile-wa {
+  background: linear-gradient(135deg, #25d366, #128c7e);
+  border-color: #128c7e;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+}
+
+.mobile-wa:hover {
+  background: linear-gradient(135deg, #20bc5a, #0e7a6e);
+  border-color: #0e7a6e;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.4);
+}
+
+.mobile-call {
+  background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
+  border-color: var(--color-secondary-dark);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(254, 123, 0, 0.3);
+}
+
+.mobile-call:hover {
+  background: linear-gradient(135deg, var(--color-secondary-dark), var(--color-secondary-dark));
+  border-color: var(--color-secondary-dark);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(254, 123, 0, 0.4);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+/* Dropdown submenu inside the off-canvas panel is always the
+   static/expandable style now (the panel itself is always used,
+   not just below 1024px), so this lives outside any media query. */
+.nav-dropdown-menu {
+  position: static;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  box-shadow: none;
+  border: none;
+  background: rgba(var(--color-primary-rgb), 0.04);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) 0;
+  margin: var(--space-1) 0 var(--space-1) var(--space-4);
+  min-width: auto;
+  display: none;
+}
+
+.nav-dropdown.open .nav-dropdown-menu {
+  display: block;
+}
+
+.nav-link {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 768px) {
+  .header {
+    height: 60px;
+  }
+  
+  :root {
+    --header-height: 60px;
+    --ad-bar-height: 32px;
+  }
+
+  /* Mobile logo enlarged 15% only (58px -> 66.7px ~ 67px). No other
+     mobile header change. */
+  .header-logo {
+    width: 67px;
+  }
+
+  .logo-circle {
+    width: 67px;
+    height: 67px;
+    transform: translate(-50%, -22%);
+  }
+
+  .header-logo:hover .logo-circle {
+    transform: translate(-50%, -22%) scale(1.04);
+  }
+
+  .header-actions {
+    gap: 2px;
+  }
+  
+  .header-btn {
+    min-width: 34px;
+    height: 34px;
+  }
+}
+
+/* Extra-narrow phones: keep the header icons from crowding */
+@media (max-width: 400px) {
+  .header-actions {
+    gap: 0;
+  }
+
+  .header-btn {
+    min-width: 30px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .lang-code {
+    font-size: 0.68rem;
+  }
+
+  .lang-toggle {
+    padding: 0 4px;
+    min-width: auto;
+  }
+}
+
+/* ============================================================
+   DESKTOP HEADER (>= 992px)
+   No existing desktop-specific breakpoint was present in this file
+   before this change (the off-canvas hamburger nav was previously
+   used at every width). This new block only activates at >=992px
+   and leaves everything below that width (the mobile header, and
+   its 768px/400px overrides above) completely untouched.
+   ============================================================ */
+@media (min-width: 992px) {
+  :root {
+    --header-height: 92px;
+    --ad-bar-height: 44px;
+  }
+
+  /* Hide the hamburger on desktop; the inline nav below replaces it */
+  .menu-toggle {
+    display: none;
+  }
+
+  .header-inner {
+    justify-content: flex-start;
+    gap: var(--space-5);
+  }
+
+  /* 1) Logo enlarged 20% on desktop only (76px -> 91.2px ~ 91px) */
+  .header-logo {
+    width: 91px;
+  }
+
+  .logo-circle {
+    width: 91px;
+    height: 91px;
+    transform: translate(-50%, -26%);
+  }
+
+  .header-logo:hover .logo-circle {
+    transform: translate(-50%, -26%) scale(1.04);
+  }
+
+  /* 2) Two-line site name / tagline text beside the logo */
+  .header-desktop-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.3;
+    margin-inline-end: var(--space-2);
+    white-space: nowrap;
+  }
+
+  .header-desktop-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    font-family: var(--font-primary);
+  }
+
+  .header-desktop-subtitle {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    font-family: var(--font-primary);
+  }
+
+  /* 3) Inline nav tabs */
+  .header-desktop-nav {
+    display: block;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .header-desktop-nav-list {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .header-desktop-nav-link {
+    display: flex;
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+    font-family: var(--font-primary);
+  }
+
+  .header-desktop-nav-link:hover {
+    color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.08);
+  }
+
+  .header-desktop-nav-link.active {
+    color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.09);
+  }
+
+  /* 4 & 5) Bulb, then language, pushed to the end of the bar, and
+     6) the flip contact card right after them. Order is controlled
+     with flex `order` (scoped to this breakpoint only) so mobile's
+     DOM/order stays exactly as it was. */
+  .header-actions {
+    margin-inline-start: auto;
+    gap: var(--space-2);
+    flex-shrink: 0;
+  }
+
+  .theme-toggle {
+    order: 1;
+  }
+
+  .lang-toggle {
+    order: 2;
+  }
+
+  .header-contact-flip {
+    order: 3;
+    display: block;
+  }
+
+  /* 6) Flip card: square, slightly larger than the icon buttons,
+     flips WhatsApp <-> Call every ~2s in an infinite loop. */
+  .header-contact-flip {
+    width: 46px;
+    height: 46px;
+    perspective: 800px;
+  }
+
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    animation: headerContactFlip 4s linear infinite;
+  }
+
+  .flip-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    color: #fff;
+    text-decoration: none;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .flip-face-front {
+    background: linear-gradient(135deg, #25d366, #128c7e);
+    box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+  }
+
+  .flip-face-back {
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
+    box-shadow: 0 4px 14px rgba(254, 123, 0, 0.3);
+    transform: rotateY(180deg);
+  }
+
+  @keyframes headerContactFlip {
+    0%, 42% {
+      transform: rotateY(0deg);
+    }
+    50%, 92% {
+      transform: rotateY(180deg);
+    }
+    100% {
+      transform: rotateY(360deg);
+    }
+  }
+}

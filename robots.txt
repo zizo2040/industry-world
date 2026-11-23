@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://industry-world.online/sitemap.php
+
+# Disallow admin
+Disallow: /admin/
+Disallow: /admin
+
+# Crawl-delay
+Crawl-delay: 1
