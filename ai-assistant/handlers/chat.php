@@ -16,6 +16,7 @@ require_once BASE_PATH . '/config.php';
 require_once BASE_PATH . '/ai-assistant/config/assistant.php';
 require_once BASE_PATH . '/ai-assistant/services/ApiClient.php';
 require_once BASE_PATH . '/ai-assistant/services/AssistantService.php';
+require_once BASE_PATH . '/ai-assistant/services/KnowledgeEngine.php';
 
 
 // ----- تقبل POST فقط -----
@@ -87,11 +88,22 @@ if ($action === 'send_message') {
     $userMessage = $validation['message'];
 
     $lang = function_exists('getCurrentLang') ? getCurrentLang() : 'ar';
+    // لغة الواجهة المرسلة من المتصفح لها الأولوية، ثم لغة الرسالة نفسها
+    $pageCtxRaw = is_array($body['context'] ?? null) ? $body['context'] : [];
+    $pageCtx = [];
+    foreach (['page', 'section', 'product', 'category', 'title', 'url'] as $k) {
+        $pageCtx[$k] = mb_substr(trim(strip_tags((string) ($pageCtxRaw[$k] ?? ''))), 0, 160);
+    }
+    if (!preg_match('/\p{Arabic}/u', $userMessage) && preg_match('/[a-z]{3,}/i', $userMessage)) {
+        $lang = 'en';
+    } elseif (preg_match('/\p{Arabic}/u', $userMessage)) {
+        $lang = 'ar';
+    }
     $siteContext = AssistantService::getSiteStructureContext($lang);
     $finalPrompt = (defined('AI_SYSTEM_PROMPT') ? AI_SYSTEM_PROMPT : '') . $siteContext;
 
     // ---- الاتصال الحقيقي بـ API ----
-    $chatResult = AssistantService::chat($userMessage, $finalPrompt, $lang);
+    $chatResult = AssistantService::chat($userMessage, $finalPrompt, $lang, $pageCtx);
 
     if (!$chatResult['success']) {
         // أرسل رسالة الخطأ للعرض كـ "assistant message" في الواجهة
@@ -126,8 +138,6 @@ if ($action === 'ping') {
     AssistantService::jsonResponse(true, 'pong', [
         'status'      => 'ready',
         'api_key_set' => $apiKeySet,
-        'model'       => defined('AI_MODEL') ? AI_MODEL : 'not_set',
-        'endpoint'    => defined('AI_API_ENDPOINT') ? AI_API_ENDPOINT : 'not_set',
         'timestamp'   => time(),
     ]);
 }

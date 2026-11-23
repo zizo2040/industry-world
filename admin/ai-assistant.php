@@ -47,6 +47,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'ai_rate_limit_window'    => (string)(int)($_POST['ai_rate_limit_window'] ?? 60),
             'ai_system_prompt'        => trim($_POST['ai_system_prompt'] ?? ''),
             'ai_knowledge_base'       => trim($_POST['ai_knowledge_base'] ?? ''),
+            // Robot & context bubbles
+            'ai_bubbles_enabled'      => isset($_POST['ai_bubbles_enabled']) ? '1' : '0',
+            'ai_bubbles_per_page'     => (string) max(1, min(10, (int) ($_POST['ai_bubbles_per_page'] ?? 3))),
+            'ai_bubbles_per_session'  => (string) max(1, min(50, (int) ($_POST['ai_bubbles_per_session'] ?? 10))),
+            'ai_bubbles_first_delay'  => (string) max(0, min(60, (int) ($_POST['ai_bubbles_first_delay'] ?? 4))),
+            'ai_bubbles_cooldown'     => (string) max(5, min(300, (int) ($_POST['ai_bubbles_cooldown'] ?? 22))),
+            'ai_robot_name_ar'        => trim($_POST['ai_robot_name_ar'] ?? ''),
+            'ai_robot_name_en'        => trim($_POST['ai_robot_name_en'] ?? ''),
+            'ai_robot_welcome_ar'     => trim($_POST['ai_robot_welcome_ar'] ?? ''),
+            'ai_robot_welcome_en'     => trim($_POST['ai_robot_welcome_en'] ?? ''),
         ];
 
         // مفتاح API: لا تحفظ إذا كان المستخدم أرسل placeholder
@@ -102,6 +112,15 @@ $currentSettings = [
     'ai_rate_limit_window'    => aiSetting('ai_rate_limit_window', '60'),
     'ai_system_prompt'        => aiSetting('ai_system_prompt', AI_DEFAULT_SYSTEM_PROMPT),
     'ai_knowledge_base'       => aiSetting('ai_knowledge_base', $rawKnowledgeDefault),
+    'ai_bubbles_enabled'      => aiSetting('ai_bubbles_enabled', '1'),
+    'ai_bubbles_per_page'     => aiSetting('ai_bubbles_per_page', '3'),
+    'ai_bubbles_per_session'  => aiSetting('ai_bubbles_per_session', '10'),
+    'ai_bubbles_first_delay'  => aiSetting('ai_bubbles_first_delay', '4'),
+    'ai_bubbles_cooldown'     => aiSetting('ai_bubbles_cooldown', '22'),
+    'ai_robot_name_ar'        => aiSetting('ai_robot_name_ar', 'فولت · المساعد الذكي'),
+    'ai_robot_name_en'        => aiSetting('ai_robot_name_en', 'Volt · Smart Assistant'),
+    'ai_robot_welcome_ar'     => aiSetting('ai_robot_welcome_ar', ''),
+    'ai_robot_welcome_en'     => aiSetting('ai_robot_welcome_en', ''),
 ];
 
 // إخفاء المفتاح في الواجهة
@@ -451,6 +470,71 @@ include __DIR__ . '/includes/header.php';
         </div>
 
     </div><!-- /ai-admin-grid -->
+
+    <!-- ====================================================
+         بطاقة: الروبوت التفاعلي والفقاعات الذكية
+         ==================================================== -->
+    <div class="admin-card reveal" style="margin-bottom: var(--space-5);">
+        <div class="admin-card-header">
+            <h2 class="admin-card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>
+                <?php echo $lang === 'ar' ? 'الروبوت التفاعلي والفقاعات الذكية' : 'Interactive Robot & Smart Bubbles'; ?>
+            </h2>
+        </div>
+        <div class="admin-card-body">
+            <p class="form-help" style="margin-bottom:var(--space-4);">
+                <?php echo $lang === 'ar'
+                    ? 'الروبوت ثلاثي الأبعاد يتابع حركة الزائر ويُظهر فقاعات مناسبة للصفحة والقسم الذي يشاهده (الأقسام، مواصفات المنتج، نموذج التواصل…) مع أزرار سريعة للسؤال أو واتساب. هذه الإعدادات تتحكم بعدد مرات الظهور حتى لا يكون مزعجاً.'
+                    : 'The 3D robot follows the visitor and shows bubbles that match the current page and section (categories, product specs, contact form…) with quick actions. These settings control how often it speaks so it never becomes annoying.'; ?>
+            </p>
+            <div class="form-group">
+                <label class="ai-admin-toggle-label" style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                    <input type="checkbox" name="ai_bubbles_enabled" value="1" <?php echo $currentSettings['ai_bubbles_enabled'] === '1' ? 'checked' : ''; ?>>
+                    <strong><?php echo $lang === 'ar' ? 'تفعيل الفقاعات الذكية' : 'Enable smart bubbles'; ?></strong>
+                </label>
+            </div>
+            <div class="ai-admin-row-2">
+                <div class="form-group">
+                    <label class="form-label" for="ai_bubbles_per_page"><?php echo $lang === 'ar' ? 'أقصى عدد فقاعات في الصفحة' : 'Max bubbles per page'; ?></label>
+                    <input type="number" class="form-control" id="ai_bubbles_per_page" name="ai_bubbles_per_page" min="1" max="10" value="<?php echo e($currentSettings['ai_bubbles_per_page']); ?>">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="ai_bubbles_per_session"><?php echo $lang === 'ar' ? 'أقصى عدد فقاعات في الزيارة' : 'Max bubbles per visit'; ?></label>
+                    <input type="number" class="form-control" id="ai_bubbles_per_session" name="ai_bubbles_per_session" min="1" max="50" value="<?php echo e($currentSettings['ai_bubbles_per_session']); ?>">
+                </div>
+            </div>
+            <div class="ai-admin-row-2">
+                <div class="form-group">
+                    <label class="form-label" for="ai_bubbles_first_delay"><?php echo $lang === 'ar' ? 'تأخير أول فقاعة (ثانية)' : 'First bubble delay (s)'; ?></label>
+                    <input type="number" class="form-control" id="ai_bubbles_first_delay" name="ai_bubbles_first_delay" min="0" max="60" value="<?php echo e($currentSettings['ai_bubbles_first_delay']); ?>">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="ai_bubbles_cooldown"><?php echo $lang === 'ar' ? 'أقل فاصل بين فقاعتين (ثانية)' : 'Min gap between bubbles (s)'; ?></label>
+                    <input type="number" class="form-control" id="ai_bubbles_cooldown" name="ai_bubbles_cooldown" min="5" max="300" value="<?php echo e($currentSettings['ai_bubbles_cooldown']); ?>">
+                </div>
+            </div>
+            <div class="ai-admin-row-2">
+                <div class="form-group">
+                    <label class="form-label" for="ai_robot_name_ar"><?php echo $lang === 'ar' ? 'اسم المساعد (عربي)' : 'Assistant name (Arabic)'; ?></label>
+                    <input type="text" class="form-control" id="ai_robot_name_ar" name="ai_robot_name_ar" maxlength="60" value="<?php echo e($currentSettings['ai_robot_name_ar']); ?>">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="ai_robot_name_en"><?php echo $lang === 'ar' ? 'اسم المساعد (إنجليزي)' : 'Assistant name (English)'; ?></label>
+                    <input type="text" class="form-control" id="ai_robot_name_en" name="ai_robot_name_en" maxlength="60" dir="ltr" value="<?php echo e($currentSettings['ai_robot_name_en']); ?>">
+                </div>
+            </div>
+            <div class="ai-admin-row-2">
+                <div class="form-group">
+                    <label class="form-label" for="ai_robot_welcome_ar"><?php echo $lang === 'ar' ? 'رسالة الترحيب في الرئيسية (عربي) — اختياري' : 'Home welcome bubble (Arabic) — optional'; ?></label>
+                    <textarea class="form-control" id="ai_robot_welcome_ar" name="ai_robot_welcome_ar" rows="2" maxlength="300"><?php echo e($currentSettings['ai_robot_welcome_ar']); ?></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="ai_robot_welcome_en"><?php echo $lang === 'ar' ? 'رسالة الترحيب في الرئيسية (إنجليزي) — اختياري' : 'Home welcome bubble (English) — optional'; ?></label>
+                    <textarea class="form-control" id="ai_robot_welcome_en" name="ai_robot_welcome_en" rows="2" maxlength="300" dir="ltr"><?php echo e($currentSettings['ai_robot_welcome_en']); ?></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ====================================================
          بطاقة 5: التعليمات الأساسية للمساعد (System Prompt)
@@ -865,7 +949,7 @@ document.getElementById('ai-test-btn').addEventListener('click', function () {
     .then(r => r.json())
     .then(data => {
         const isKeySet = data.data && data.data.api_key_set;
-        const model    = (data.data && data.data.model) || '?';
+        const model    = <?php echo json_encode($currentSettings['ai_model']); ?>;
 
         if (isKeySet) {
             result.innerHTML = `

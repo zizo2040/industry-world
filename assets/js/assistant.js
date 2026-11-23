@@ -123,8 +123,23 @@
         loadHistory();
         initInteractiveFeatures();
 
-        // يسمح لعناصر أخرى (مثل الروبوت المتنقل) بفتح نافذة المحادثة
-        document.addEventListener('ai-assistant:open', openWindow);
+        // يسمح لعناصر أخرى (مثل الروبوت التفاعلي وفقاعاته) بفتح نافذة المحادثة
+        document.addEventListener('ai-assistant:open', function () { if (!STATE.isOpen) openWindow(); });
+
+        // فتح المحادثة وإرسال سؤال جاهز (من أزرار فقاعات الروبوت)
+        document.addEventListener('ai-assistant:ask', function (e) {
+            const text = e.detail && e.detail.text ? String(e.detail.text) : '';
+            if (!STATE.isOpen) openWindow();
+            if (!text) return;
+            const trySend = function () {
+                if (STATE.isSending) { setTimeout(trySend, 400); return; }
+                DOM.input.value = text;
+                autoResizeInput();
+                updateCharCount();
+                handleSend();
+            };
+            setTimeout(trySend, 320);
+        });
     });
 
     // ============================================================
@@ -167,6 +182,9 @@
             DOM.clearBtn.addEventListener('click', handleClear);
         }
 
+        const closeBtn = document.getElementById('ai-close-btn');
+        if (closeBtn) closeBtn.addEventListener('click', closeWindow);
+
         // Escape يغلق النافذة
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && STATE.isOpen) closeWindow();
@@ -176,7 +194,8 @@
         document.addEventListener('click', function (e) {
             if (STATE.isOpen &&
                 !DOM.window.contains(e.target) &&
-                !DOM.toggleBtn.contains(e.target)) {
+                !DOM.toggleBtn.contains(e.target) &&
+                !(e.target.closest && e.target.closest('.ai-bubble'))) {
                 closeWindow();
             }
         });
@@ -359,6 +378,7 @@
         resetBadge();
         hideWelcomeBubble();
         scrollToBottom(true);
+        emitState('open');
 
         setTimeout(function () {
             DOM.input.focus();
@@ -371,7 +391,12 @@
         DOM.toggleBtn.classList.remove('is-open');
         DOM.toggleBtn.setAttribute('aria-expanded', 'false');
         document.body.classList.remove('ai-body-lock');
-        DOM.toggleBtn.focus(); // إعادة التركيز للزر بعد الإغلاق
+        DOM.toggleBtn.focus({ preventScroll: true }); // إعادة التركيز للزر بعد الإغلاق
+        emitState('closed');
+    }
+
+    function emitState(state) {
+        document.dispatchEvent(new CustomEvent('ai-assistant:state', { detail: { state: state } }));
     }
 
     // ============================================================
@@ -380,20 +405,8 @@
     let welcomeBubbleTimeout = null;
 
     function initInteractiveFeatures() {
-        // البدء بالنبض بعد ثانية ونصف لجذب الانتباه بلطف
-        setTimeout(function() {
-            if (!STATE.isOpen && !sessionStorage.getItem('ai_bubble_closed')) {
-                DOM.toggleBtn.classList.add('ai-pulse-active');
-            }
-        }, 1500);
-
-        // إظهار فقاعة الترحيب بعد 5 ثوانٍ
-        welcomeBubbleTimeout = setTimeout(function() {
-            if (STATE.isOpen || sessionStorage.getItem('ai_bubble_closed')) {
-                return;
-            }
-            showWelcomeBubble();
-        }, 5000);
+        // الفقاعات والتفاعل أصبحت من مسؤولية الروبوت ثلاثي الأبعاد
+        // (assets/js/assistant-robot.js) — لا شيء هنا لتجنّب تكرار الفقاعات.
     }
 
     function showWelcomeBubble() {
@@ -511,11 +524,23 @@
         appendMessage('user', text);
 
         const typingId = showTyping();
+        emitState('thinking');
 
         STATE.isSending = true;
         setSendState(true);
 
-        sendRequest('send_message', { message: text })
+        const ctx = window.AI_PAGE_CONTEXT || {};
+        sendRequest('send_message', {
+            message: text,
+            context: {
+                page:     ctx.page || '',
+                section:  ctx.section || '',
+                product:  ctx.product || '',
+                category: ctx.category || '',
+                title:    document.title || '',
+                url:      location.pathname + location.search,
+            },
+        })
             .then(function (data) {
                 removeTyping(typingId);
 
@@ -527,7 +552,8 @@
             })
             .catch(function () {
                 removeTyping(typingId);
-                appendMessage('assistant', 'عذراً، تعذّر الاتصال بالخادم. يرجى التحقق من اتصالك والمحاولة مرة أخرى.', true);
+                appendMessage('assistant', PAGE.lang === 'ar' ? 'عذراً، تعذّر الاتصال بالخادم. يرجى التحقق من اتصالك والمحاولة مرة أخرى.' : 'Sorry, could not reach the server. Please check your connection and try again.', true);
+                emitState('idle');
             })
             .finally(function () {
                 STATE.isSending = false;
@@ -576,13 +602,16 @@
 
         if (role === 'assistant' && !isRestored && !isError) {
             STATE.isTypingEffect = true;
+            emitState('talking');
             typewrite(bubble, content, function () {
                 STATE.isTypingEffect = false;
                 scrollToBottom(true);
+                emitState('idle');
             });
         } else {
             bubble.innerHTML = content;
             scrollToBottom(!isRestored);
+            if (role === 'assistant' && !isRestored) emitState('idle');
         }
 
         if (!STATE.isOpen && role === 'assistant' && !isRestored) {
@@ -642,45 +671,67 @@
     // Markdown Renderer
     // ============================================================
     function renderMarkdown(text) {
-        let html = escapeHtmlBasic(text);
+        let html = escapeHtmlBasic(String(text || '').replace(/\r\n?/g, '\n')).trim();
 
-        // روابط ([text](url))
-        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (_, linkText, url) {
-            const isInternal = url.startsWith('/') || !url.includes('://');
-            const target = isInternal ? '' : ' target="_blank" rel="noopener"';
+        // كتل الكود (تُستخرج أولاً حتى لا تتأثر ببقية القواعد)
+        const codeBlocks = [];
+        html = html.replace(/```[a-z]*\n?([\s\S]*?)```/gi, function (_, code) {
+            codeBlocks.push('<pre class="ai-code-block"><code>' + code.trim() + '</code></pre>');
+            return '\u0000' + (codeBlocks.length - 1) + '\u0000';
+        });
+
+        // روابط ([text](url)) — نسمح فقط بروابط http(s) أو روابط داخلية أو wa.me/tel
+        html = html.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (_, linkText, url) {
+            const safe = /^(https?:\/\/|\/|tel:|mailto:)/i.test(url) || /^[a-z0-9_-]+\.php/i.test(url);
+            if (!safe) return linkText;
+            const isInternal = !/^https?:\/\//i.test(url);
+            const target = isInternal ? '' : ' target="_blank" rel="noopener noreferrer"';
             return '<a href="' + url + '" class="ai-link' + (isInternal ? ' is-internal' : '') + '"' + target + '>' + linkText + '</a>';
         });
 
-        // كتل الكود
-        html = html.replace(/```([\s\S]*?)```/g, function (_, code) {
-            return '<pre class="ai-code-block"><code>' + code.trim() + '</code></pre>';
-        });
-
-        // كود مضمّن
         html = html.replace(/`([^`\n]+)`/g, '<code class="ai-code-inline">$1</code>');
-
-        // عريض
         html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,!?،]|$)/g, '$1<em>$2</em>');
 
-        // مائل
-        html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-
-        // قوائم
-        html = html.replace(/((?:^|\n)- .+)+/g, function (block) {
-            const items = block.trim().split('\n').map(function (line) {
-                return '<li>' + line.replace(/^- /, '') + '</li>';
-            }).join('');
-            return '<ul class="ai-list">' + items + '</ul>';
+        // كتل الأسطر: عناوين / قوائم نقطية / قوائم مرقمة / فقرات
+        const lines = html.split('\n');
+        const out = [];
+        let list = null; // {type:'ul'|'ol', items:[]}
+        const flush = function () {
+            if (!list) return;
+            out.push('<' + list.type + ' class="ai-list">' + list.items.map(function (i) { return '<li>' + i + '</li>'; }).join('') + '</' + list.type + '>');
+            list = null;
+        };
+        lines.forEach(function (raw) {
+            const line = raw.trim();
+            let m;
+            if ((m = line.match(/^[-*•]\s+(.*)$/))) {
+                if (!list || list.type !== 'ul') { flush(); list = { type: 'ul', items: [] }; }
+                list.items.push(m[1]);
+            } else if ((m = line.match(/^(\d+)[.)]\s+(.*)$/))) {
+                if (!list || list.type !== 'ol') { flush(); list = { type: 'ol', items: [] }; }
+                list.items.push(m[2]);
+            } else if ((m = line.match(/^#{1,4}\s+(.*)$/))) {
+                flush();
+                out.push('<p class="ai-md-heading"><strong>' + m[1] + '</strong></p>');
+            } else if (line === '') {
+                flush();
+                out.push('');
+            } else {
+                flush();
+                out.push(line);
+            }
         });
+        flush();
 
-        // أسطر جديدة
-        html = html.replace(/\n/g, '<br>');
+        // دمج الأسطر: فقرات مفصولة بسطر فارغ، وأسطر متتالية بـ <br>
+        html = out.join('\n')
+            .replace(/\n{2,}/g, '<span class="ai-md-gap"></span>')
+            .replace(/\n(?=<(ul|ol|p)\b)/g, '')
+            .replace(/(<\/(ul|ol|p)>)\n/g, '$1')
+            .replace(/\n/g, '<br>');
 
-        // إزالة <br> داخل <pre>
-        html = html.replace(/<pre[^>]*>[\s\S]*?<\/pre>/g, function (match) {
-            return match.replace(/<br>/g, '\n');
-        });
-
+        html = html.replace(/\u0000(\d+)\u0000/g, function (_, i) { return codeBlocks[+i]; });
         return html;
     }
 

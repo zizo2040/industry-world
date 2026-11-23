@@ -239,14 +239,23 @@ class AssistantService
      * @param  string $systemPrompt System prompt (فارغ حتى المرحلة السادسة)
      * @return array{success: bool, reply: string, errorCode?: string}
      */
-    public static function chat(string $userMessage, string $systemPrompt = '', string $lang = 'ar'): array
+    public static function chat(string $userMessage, string $systemPrompt = '', string $lang = 'ar', array $pageCtx = []): array
     {
         // حفظ رسالة المستخدم في السياق
         self::appendMessage('user', $userMessage);
 
-        // جلب السياق من الـ RAG ديناميكياً بناءً على رسالة العميل الحالية
-        $ragContext = self::retrieveRelevantContext($userMessage, $lang);
+        // سياق الصفحة + الاسترجاع (RAG) من المنتجات والأقسام وقاعدة المعرفة
+        $ragContext  = KnowledgeEngine::pageContextPrompt($pageCtx, $lang)
+                     . "\n\n=== " . ($lang === 'ar' ? 'معلومات مسترجعة ذات صلة بسؤال العميل (اعتمد عليها للإجابة)' : 'Retrieved information relevant to the question (use it)') . " ===\n"
+                     . KnowledgeEngine::context($userMessage, $lang, $pageCtx);
         $finalPrompt = $systemPrompt . $ragContext;
+
+        // لا يوجد مفتاح API: أجب محلياً مباشرة بدون محاولة اتصال (أسرع)
+        if (!defined('AI_API_KEY') || AI_API_KEY === '') {
+            $offline = KnowledgeEngine::answer($userMessage, $lang, $pageCtx);
+            self::appendMessage('assistant', $offline);
+            return ['success' => true, 'reply' => $offline];
+        }
 
         // بناء السياق الكامل لإرساله
         $history = self::getConversationHistory();
@@ -256,7 +265,7 @@ class AssistantService
 
         if (!$result->success) {
             // في حالة عدم ضبط API Key أو تعثر الاتصال: نعتمد محرك الإجابات الذكي المحلي لضمان استمرارية الخدمة
-            $offlineResponse = self::getSmartOfflineResponse($userMessage, $lang);
+            $offlineResponse = KnowledgeEngine::answer($userMessage, $lang, $pageCtx);
 
             self::logInfo('API unavailable - Served smart offline response', [
                 'code' => $result->errorCode,

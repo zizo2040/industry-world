@@ -199,7 +199,15 @@ function adminUrl(string $path = ''): string {
  * Asset URL
  */
 function asset(string $path): string {
-    return rtrim(ASSETS_URL, '/') . '/' . ltrim($path, '/');
+    $path = ltrim($path, '/');
+    $url  = rtrim(ASSETS_URL, '/') . '/' . $path;
+    // Cache-busting for CSS/JS so visitors always get the latest design
+    // after an update (the file's modification time is the version).
+    if (preg_match('/\.(css|js)$/i', $path)) {
+        $file = BASE_PATH . '/assets/' . $path;
+        if (is_file($file)) $url .= '?v=' . filemtime($file);
+    }
+    return $url;
 }
 
 /**
@@ -498,7 +506,7 @@ function formatBytes(int $bytes, int $precision = 2): string {
  * Generate WhatsApp link
  */
 function whatsappLink(string $phone, string $message = '', bool $isGroup = false): string {
-    $phone = preg_replace('/[^0-9]/', '', $phone);
+    $phone = $isGroup ? preg_replace('/[^0-9A-Za-z]/', '', $phone) : normalizeYemenPhone($phone);
     $base = $isGroup ? 'https://chat.whatsapp.com/' : 'https://wa.me/';
     
     if ($isGroup) {
@@ -510,6 +518,39 @@ function whatsappLink(string $phone, string $message = '', bool $isGroup = false
         $url .= '?text=' . urlencode($message);
     }
     return $url;
+}
+
+/**
+ * Normalise a Yemeni mobile number to international format without "+".
+ * "781067910" / "0781067910" / "+967 781 067 910" → "967781067910".
+ * wa.me links do NOT work without the country code.
+ */
+function normalizeYemenPhone(string $phone): string {
+    $digits = preg_replace('/\D+/', '', $phone);
+    if ($digits === '') return '';
+    if (str_starts_with($digits, '00')) $digits = substr($digits, 2);
+    if (str_starts_with($digits, '967')) return $digits;
+    $digits = ltrim($digits, '0');
+    return strlen($digits) === 9 ? '967' . $digits : $digits;
+}
+
+/**
+ * tel: link value (+967…)
+ */
+function telLink(string $phone): string {
+    $n = normalizeYemenPhone($phone);
+    return $n === '' ? '' : 'tel:+' . $n;
+}
+
+/**
+ * Human-readable phone: +967 781 067 910
+ */
+function formatPhoneDisplay(string $phone): string {
+    $n = normalizeYemenPhone($phone);
+    if (strlen($n) === 12 && str_starts_with($n, '967')) {
+        return '+967 ' . substr($n, 3, 3) . ' ' . substr($n, 6, 3) . ' ' . substr($n, 9, 3);
+    }
+    return $phone;
 }
 
 /**

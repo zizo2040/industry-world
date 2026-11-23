@@ -13,25 +13,25 @@ $theme = $_COOKIE['theme'] ?? DEFAULT_THEME;
     <div class="whatsapp-float">
         <div class="whatsapp-float-menu">
             <?php if (getSetting('whatsapp_primary')): ?>
-            <a href="https://wa.me/<?php echo getSetting('whatsapp_primary'); ?>" class="whatsapp-float-item" target="_blank" rel="noopener noreferrer">
+            <a href="<?php echo e(whatsappLink(getSetting('whatsapp_primary'))); ?>" class="whatsapp-float-item" target="_blank" rel="noopener noreferrer">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                 <?php echo getSetting('whatsapp_primary'); ?>
             </a>
             <?php endif; ?>
             <?php if (getSetting('whatsapp_secondary_1')): ?>
-            <a href="https://wa.me/<?php echo getSetting('whatsapp_secondary_1'); ?>" class="whatsapp-float-item" target="_blank" rel="noopener noreferrer">
+            <a href="<?php echo e(whatsappLink(getSetting('whatsapp_secondary_1'))); ?>" class="whatsapp-float-item" target="_blank" rel="noopener noreferrer">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                 <?php echo getSetting('whatsapp_secondary_1'); ?>
             </a>
             <?php endif; ?>
             <?php if (getSetting('whatsapp_secondary_2')): ?>
-            <a href="https://wa.me/<?php echo getSetting('whatsapp_secondary_2'); ?>" class="whatsapp-float-item" target="_blank" rel="noopener noreferrer">
+            <a href="<?php echo e(whatsappLink(getSetting('whatsapp_secondary_2'))); ?>" class="whatsapp-float-item" target="_blank" rel="noopener noreferrer">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                 <?php echo getSetting('whatsapp_secondary_2'); ?>
             </a>
             <?php endif; ?>
         </div>
-        <a href="https://wa.me/<?php echo getSetting('whatsapp_primary'); ?>" class="whatsapp-float-btn" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"
+        <a href="<?php echo e(whatsappLink(getSetting('whatsapp_primary'))); ?>" class="whatsapp-float-btn" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"
            data-ai-peek-text="<?php echo $lang === 'ar' ? 'تفضّل تواصل معنا مباشرة على واتساب!' : 'Feel free to reach us directly on WhatsApp!'; ?>">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
             <span><?php echo __('whatsapp_click'); ?></span>
@@ -149,9 +149,9 @@ $theme = $_COOKIE['theme'] ?? DEFAULT_THEME;
                                 <ul class="footer-phone-list">
                                     <?php foreach ($footerPhoneNumbers as $footerPhone): ?>
                                     <li>
-                                        <a href="tel:+967<?php echo e($footerPhone); ?>" class="footer-phone-link">
+                                        <a href="<?php echo e(telLink($footerPhone)); ?>" class="footer-phone-link">
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                                            +967 <?php echo e(substr($footerPhone, 0, 3) . ' ' . substr($footerPhone, 3, 3) . ' ' . substr($footerPhone, 6)); ?>
+                                            <?php echo e(formatPhoneDisplay($footerPhone)); ?>
                                         </a>
                                     </li>
                                     <?php endforeach; ?>
@@ -247,20 +247,21 @@ $theme = $_COOKIE['theme'] ?? DEFAULT_THEME;
 
         <!-- Header -->
         <div class="ai-header">
-            <div class="ai-header-avatar">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <circle cx="12" cy="8" r="4"/>
-                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-                </svg>
+            <div class="ai-header-avatar ai-header-robot" aria-hidden="true">
+                <span class="ai-hr-visor"><span class="ai-hr-eye"></span><span class="ai-hr-eye"></span></span>
             </div>
             <div class="ai-header-info">
-                <div class="ai-header-name"><?php echo $lang === 'ar' ? 'المساعد الذكي' : 'AI Assistant'; ?></div>
+                <div class="ai-header-name"><?php echo e(getSetting('ai_robot_name_' . $lang) ?: ($lang === 'ar' ? 'فولت · المساعد الذكي' : 'Volt · Smart Assistant')); ?></div>
                 <div class="ai-header-status">
                     <span class="ai-status-dot"></span>
                     <?php echo $lang === 'ar' ? 'متاح الآن' : 'Online'; ?>
                 </div>
             </div>
             <div class="ai-header-actions">
+                <a class="ai-header-btn ai-header-wa" href="<?php echo e(whatsappLink(getSetting('whatsapp_primary'))); ?>" target="_blank" rel="noopener noreferrer"
+                   title="WhatsApp" aria-label="WhatsApp">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.41-.08-.13-.27-.2-.57-.35M12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88"/></svg>
+                </a>
                 <button id="ai-clear-btn" class="ai-header-btn"
                         title="<?php echo $lang === 'ar' ? 'مسح المحادثة' : 'Clear chat'; ?>"
                         aria-label="<?php echo $lang === 'ar' ? 'مسح المحادثة' : 'Clear chat'; ?>">
@@ -270,6 +271,10 @@ $theme = $_COOKIE['theme'] ?? DEFAULT_THEME;
                         <path d="M10 11v6M14 11v6"/>
                         <path d="M9 6V4h6v2"/>
                     </svg>
+                </button>
+                <button type="button" id="ai-close-btn" class="ai-header-btn ai-header-close"
+                        aria-label="<?php echo $lang === 'ar' ? 'إغلاق المحادثة' : 'Close chat'; ?>">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
         </div>
@@ -302,17 +307,28 @@ $theme = $_COOKIE['theme'] ?? DEFAULT_THEME;
     </div>
     <!-- /AI Assistant Widget -->
 
-    <!-- AI Assistant: Page Context (للاقتراحات الذكية) -->
+    <!-- AI Assistant: Page Context + Robot configuration (Admin › AI Assistant) -->
     <script>
-    window.AI_PAGE_CONTEXT = {
-        page:  '<?php echo e($activePage ?? 'home'); ?>',
-        title: '<?php echo e(addslashes($pageTitle ?? getSetting('site_name_' . $lang, ''))); ?>',
-        url:   '<?php echo e(currentUrl()); ?>',
-        lang:  '<?php echo e($lang); ?>',
-    };
+    window.AI_PAGE_CONTEXT = <?php echo json_encode([
+        'page'  => $activePage ?? 'home',
+        'title' => $pageTitle ?? getSetting('site_name_' . $lang, ''),
+        'url'   => currentUrl(),
+        'lang'  => $lang,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP); ?>;
+    window.AI_ROBOT_CONFIG = <?php echo json_encode([
+        'bubbles'       => getSetting('ai_bubbles_enabled', '1') === '1',
+        'maxPerPage'    => max(1, (int) getSetting('ai_bubbles_per_page', '3')),
+        'maxPerSession' => max(1, (int) getSetting('ai_bubbles_per_session', '10')),
+        'firstDelay'    => max(0, (int) getSetting('ai_bubbles_first_delay', '4')) * 1000,
+        'cooldown'      => max(5, (int) getSetting('ai_bubbles_cooldown', '22')) * 1000,
+        'name'          => getSetting('site_name_' . $lang),
+        'whatsapp'      => getSetting('whatsapp_primary'),
+        'welcomeAr'     => getSetting('ai_robot_welcome_ar'),
+        'welcomeEn'     => getSetting('ai_robot_welcome_en'),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP); ?>;
     </script>
     <script src="<?php echo asset('js/assistant.js'); ?>" defer></script>
-    <script src="<?php echo asset('js/assistant-mascot.js'); ?>" defer></script>
+    <script src="<?php echo asset('js/assistant-robot.js'); ?>" defer></script>
     <?php endif; ?>
 
     <!-- Back to Top -->

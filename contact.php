@@ -203,7 +203,8 @@ include BASE_PATH . '/includes/header.php';
                         ?>
                         <?php foreach ($contactPhoneNumbers as $i => $contactPhone): ?>
                         <p style="margin:0;<?php echo $i > 0 ? 'margin-top:4px;' : ''; ?>">
-                            <a href="tel:+967<?php echo e($contactPhone); ?>">+967 <?php echo e(substr($contactPhone, 0, 3) . ' ' . substr($contactPhone, 3, 3) . ' ' . substr($contactPhone, 6)); ?></a>
+                            <a href="<?php echo e(telLink($contactPhone)); ?>" dir="ltr"><?php echo e(formatPhoneDisplay($contactPhone)); ?></a>
+                            <a href="<?php echo e(whatsappLink($contactPhone)); ?>" target="_blank" rel="noopener noreferrer" class="contact-wa-mini" aria-label="WhatsApp <?php echo e(formatPhoneDisplay($contactPhone)); ?>">WhatsApp</a>
                         </p>
                         <?php endforeach; ?>
                     </div>
