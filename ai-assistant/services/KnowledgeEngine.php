@@ -364,9 +364,13 @@ class KnowledgeEngine
     public static function searchKnowledge(array $terms, string $lang, int $max = 2): array
     {
         if (!$terms) return [];
+        // Admin-edited knowledge (Admin › AI Assistant) + the bundled file, so
+        // newly shipped company facts are always searchable too.
         $content = function_exists('getSetting') ? trim((string) getSetting('ai_knowledge_base')) : '';
-        if ($content === '' && is_file(BASE_PATH . '/ai-assistant/data/knowledge.md')) {
-            $content = (string) file_get_contents(BASE_PATH . '/ai-assistant/data/knowledge.md');
+        $file = BASE_PATH . '/ai-assistant/data/knowledge.md';
+        if (is_file($file)) {
+            $fileContent = (string) file_get_contents($file);
+            if ($content === '' || trim($fileContent) !== $content) $content .= "\n\n" . $fileContent;
         }
         if ($content === '') return [];
 

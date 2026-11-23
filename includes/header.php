@@ -231,20 +231,21 @@ $activePage = $activePage ?? '';
          (the hero section on the home page, the page banner everywhere
          else) so the header no longer sits flush against them. -->
     <?php
-    $adBarMessage = getSetting('site_tagline_' . $lang) ?: getSetting('site_name_' . $lang);
+    // Announcement bar items: Admin › Settings (ad_bar_items_ar / _en),
+    // separated by "|". Falls back to the tagline.
+    $adBarItems = array_values(array_filter(array_map('trim', explode('|', getSetting('ad_bar_items_' . $lang)))));
+    if (!$adBarItems) {
+        $adBarItems = [getSetting('site_tagline_' . $lang) ?: getSetting('site_name_' . $lang)];
+    }
+    $adBarRepeatCount = max(1, (int) ceil(6 / count($adBarItems)));
     ?>
     <div class="ad-bar" role="complementary" aria-label="<?php echo $lang === 'ar' ? 'شريط إعلاني' : 'Announcement bar'; ?>">
         <div class="ad-bar-track">
             <?php for ($adBarGroup = 0; $adBarGroup < 2; $adBarGroup++): ?>
             <div class="ad-bar-group" <?php echo $adBarGroup === 1 ? 'aria-hidden="true"' : ''; ?>>
-                <?php for ($adBarRepeat = 0; $adBarRepeat < 4; $adBarRepeat++): ?>
-                <span class="ad-bar-item">
-                    <svg class="ad-bar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
-                        <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"></path>
-                    </svg>
-                    <span><?php echo e($adBarMessage); ?></span>
-                </span>
-                <?php endfor; ?>
+                <?php for ($adBarRepeat = 0; $adBarRepeat < $adBarRepeatCount; $adBarRepeat++): foreach ($adBarItems as $adBarItem): ?>
+                <span class="ad-bar-item"><span><?php echo e($adBarItem); ?></span></span>
+                <?php endforeach; endfor; ?>
             </div>
             <?php endfor; ?>
         </div>
