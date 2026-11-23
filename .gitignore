@@ -1,4 +1,3 @@
 config.local.php
 logs/*.log
-assets/uploads/
 .DS_Store

@@ -79,17 +79,22 @@ function get_page_image(string $sectionKey, string $device = 'desktop'): string 
         return uploadUrl(getOrCreatePageImagePlaceholder($sectionKey, $device, 1920, 600));
     }
 
+    // Only use paths whose file really exists on disk (a DB row can point to
+    // a file that was never uploaded or was lost when moving hosts).
+    $exists = static function (?string $rel): bool {
+        return !empty($rel) && is_file(uploadPath($rel));
+    };
+    $own   = $device === 'mobile' ? ($row['mobile_image_path'] ?? '') : ($row['desktop_image_path'] ?? '');
+    $other = $device === 'mobile' ? ($row['desktop_image_path'] ?? '') : ($row['mobile_image_path'] ?? '');
+
     // 1) Device-specific image
-    if ($device === 'mobile' && !empty($row['mobile_image_path'])) {
-        return uploadUrl($row['mobile_image_path']);
-    }
-    if ($device === 'desktop' && !empty($row['desktop_image_path'])) {
-        return uploadUrl($row['desktop_image_path']);
+    if ($exists($own)) {
+        return uploadUrl($own);
     }
 
-    // 2) Mobile missing -> reuse desktop image automatically
-    if ($device === 'mobile' && !empty($row['desktop_image_path'])) {
-        return uploadUrl($row['desktop_image_path']);
+    // 2) Missing -> reuse the other device's image automatically
+    if ($exists($other)) {
+        return uploadUrl($other);
     }
 
     // 3) Nothing uploaded at all -> generate a placeholder at the exact recommended size
