@@ -218,7 +218,7 @@ include BASE_PATH . '/includes/header.php';
                     </div>
                     <div class="contact-item-content">
                         <h4><?php echo __('working_hours'); ?></h4>
-                        <p><?php echo __('sat_thu'); ?>: 8:00 AM - 10:00 PM<br><?php echo __('friday'); ?>: 2:00 PM - 10:00 PM</p>
+                        <p><?php echo workingHoursHtml(); ?></p>
                     </div>
                 </div>
             </div>

@@ -554,6 +554,21 @@ function formatPhoneDisplay(string $phone): string {
 }
 
 /**
+ * Working hours (Admin › Settings), one line per comma-separated part.
+ */
+function workingHoursHtml(): string {
+    $lang = getCurrentLang();
+    $h = getSetting('working_hours_' . $lang);
+    if ($h === '') {
+        $h = $lang === 'ar'
+            ? 'السبت – الخميس: 8:00 صباحاً – 10:00 مساءً، الجمعة: 2:00 ظهراً – 10:00 مساءً'
+            : 'Saturday – Thursday: 8:00 AM – 10:00 PM, Friday: 2:00 PM – 10:00 PM';
+    }
+    $parts = array_filter(array_map('trim', preg_split('/[،,]\s*/u', $h)));
+    return implode('<br>', array_map('e', $parts));
+}
+
+/**
  * Generate pre-filled WhatsApp message
  */
 function generateWhatsAppMessage(string $type, array $data = []): string {

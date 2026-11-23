@@ -60,7 +60,7 @@ $theme = $_COOKIE['theme'] ?? DEFAULT_THEME;
                                  alt="<?php echo e(getSetting('site_name_' . $lang)); ?>" id="footer-logo-img">
                         </div>
                         <?php else: ?>
-                        <div class="footer-logo-icon">A</div>
+                        <div class="footer-logo-icon"><svg viewBox="0 0 40 40" width="22" height="22" fill="none" aria-hidden="true"><path d="M22 4L8 22H20L18 36L32 18H20L22 4Z" fill="white"/></svg></div>
                         <?php endif; ?>
                         <div class="footer-logo-text">
                             <?php echo e(getSetting('site_name_' . $lang)); ?>
@@ -68,9 +68,9 @@ $theme = $_COOKIE['theme'] ?? DEFAULT_THEME;
                         </div>
                     </a>
                     <p class="footer-description">
-                        <?php echo $lang === 'ar' 
-                            ? 'شركة رائدة في مجال توفير الحلول الكهربائية والصناعية المتكاملة في اليمن. نحن نخدم القطاع الصناعي بتفانٍ واحترافية.' 
-                            : 'A leading company in providing integrated electrical and industrial solutions in Yemen. We serve the industrial sector with dedication and professionalism.'; ?>
+                        <?php echo $lang === 'ar'
+                            ? e(getSetting('site_name_alt_ar') ?: 'عالم الصناعة للكهرباء والمستلزمات الصناعية') . ' — بيع المستلزمات الكهربائية والصناعية، قطع غيار المولدات الكهربائية والمعدات الزراعية، المنظومات الشمسية والطاقة المتجددة، التحكم الصناعي ومستلزمات المصانع وخطوط الإنتاج. من تعز - الحوبان إلى جميع المحافظات.'
+                            : 'Electrical & industrial supplies, generator and agricultural spare parts, solar systems & renewable energy, industrial control and factory/production-line supplies — from Taiz (Al-Hawban) to all of Yemen.'; ?>
                     </p>
                     <div class="footer-social">
                         <?php if (getSetting('facebook_url')): ?>
@@ -81,6 +81,19 @@ $theme = $_COOKIE['theme'] ?? DEFAULT_THEME;
                         <?php if (getSetting('twitter_url')): ?>
                         <a href="<?php echo e(getSetting('twitter_url')); ?>" class="footer-social-link" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
                             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>
+                        </a>
+                        <?php endif; ?>
+                        <a href="<?php echo e(whatsappLink(getSetting('whatsapp_primary'))); ?>" class="footer-social-link" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.41-.08-.13-.27-.2-.57-.35M12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88"/></svg>
+                        </a>
+                        <?php if (getSetting('youtube_url')): ?>
+                        <a href="<?php echo e(getSetting('youtube_url')); ?>" class="footer-social-link" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+                        </a>
+                        <?php endif; ?>
+                        <?php if (getSetting('tiktok_url')): ?>
+                        <a href="<?php echo e(getSetting('tiktok_url')); ?>" class="footer-social-link" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.6 6.7a4.8 4.8 0 0 1-3.8-4.2V2h-3.4v13.4a2.9 2.9 0 1 1-2-2.7V9.2a6.3 6.3 0 1 0 5.4 6.2V8.6a8.2 8.2 0 0 0 4.8 1.5V6.7z"/></svg>
                         </a>
                         <?php endif; ?>
                         <?php if (getSetting('instagram_url')): ?>
@@ -165,8 +178,7 @@ $theme = $_COOKIE['theme'] ?? DEFAULT_THEME;
                             </div>
                             <div class="footer-contact-text">
                                 <strong><?php echo __('working_hours'); ?></strong>
-                                <?php echo __('sat_thu'); ?>: 8:00 AM - 10:00 PM<br>
-                                <?php echo __('friday'); ?>: 2:00 PM - 10:00 PM
+                                <?php echo workingHoursHtml(); ?>
                             </div>
                         </li>
                     </ul>

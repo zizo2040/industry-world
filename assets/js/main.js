@@ -1077,6 +1077,27 @@
         MobileMenu.init();
         SearchOverlay.init();
         HeaderScroll.init();
+        // Branded placeholder for missing/broken images (no ugly alt text)
+        (function () {
+            const PH = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="#eef4fb"/><path d="M212 110l-40 52h30l-6 38 40-52h-30z" fill="#0281de" opacity=".35"/></svg>');
+            const fix = (img) => {
+                if (img.dataset.fallbackApplied) return;
+                img.dataset.fallbackApplied = '1';
+                const banner = img.closest('.page-banner');
+                if (banner) { banner.style.display = 'none'; return; } // no banner uploaded → just hide it
+                img.classList.add('img-fallback');
+                img.removeAttribute('srcset');
+                const pic = img.closest('picture');
+                if (pic) pic.querySelectorAll('source').forEach(s => s.remove());
+                img.src = PH;
+            };
+            document.querySelectorAll('img').forEach(img => {
+                if (img.complete && img.naturalWidth === 0 && img.getAttribute('src')) fix(img);
+            });
+            document.addEventListener('error', (e) => {
+                if (e.target && e.target.tagName === 'IMG') fix(e.target);
+            }, true);
+        })();
         ScrollReveal.init();
         ScrollProgressBar.init();
         AnimatedCounters.init();

@@ -33,6 +33,7 @@ if ($currentCategory) {
         getSetting('site_name_' . $lang),
     ]));
 }
+$listingBaseUrl = $canonicalUrl;
 // Paginated pages are distinct pages for search engines
 if (!empty($_GET['page']) && (int) $_GET['page'] > 1) {
     $canonicalUrl .= (str_contains($canonicalUrl, '?') ? '&' : '?') . 'page=' . (int) $_GET['page'];
@@ -75,11 +76,26 @@ $parentCategories = Database::fetchAll(
     "SELECT id, name_{$lang} as name, slug, icon FROM categories WHERE parent_id IS NULL AND is_active = 1 ORDER BY sort_order"
 );
 
+// Active main section + its sub-sections (sidebar tree & mobile chips)
+$activeRootId = $currentCategory ? (int) ($currentCategory['parent_id'] ?: $currentCategory['id']) : 0;
+$activeRoot = null;
+$rootSubs = [];
+if ($activeRootId) {
+    $activeRoot = Database::fetchOne("SELECT id, name_{$lang} AS name, slug FROM categories WHERE id = :id", ['id' => $activeRootId]);
+    $rootSubs = Database::fetchAll(
+        "SELECT id, name_{$lang} AS name, slug FROM categories WHERE parent_id = :id AND is_active = 1 AND deleted_at IS NULL ORDER BY sort_order",
+        ['id' => $activeRootId]
+    );
+}
+
 // Breadcrumb
 $breadcrumbs = [
     ['name' => __('nav_home'), 'url' => url()],
     ['name' => __('nav_products'), 'url' => url('products.php')],
 ];
+if ($currentCategory && !empty($currentCategory['parent_id']) && $activeRoot) {
+    $breadcrumbs[] = ['name' => $activeRoot['name'], 'url' => url('products.php?category=' . $activeRoot['slug'])];
+}
 if ($currentCategory) {
     $breadcrumbs[] = ['name' => $currentCategory['name_' . $lang], 'url' => null];
 }
@@ -122,20 +138,27 @@ include BASE_PATH . '/includes/header.php';
     <div class="container">
         <div class="products-layout">
             <!-- Sidebar -->
-            <aside class="reveal-left">
-                <div class="card" style="padding:var(--space-5);">
-                    <h3 style="font-size:1.05rem;margin-bottom:var(--space-4);"><?php echo $lang === 'ar' ? 'الفئات' : 'Categories'; ?></h3>
-                    <ul style="list-style:none;">
-                        <li style="margin-bottom:var(--space-2);">
-                            <a href="<?php echo url('products.php'); ?>" class="nav-dropdown-item" style="border-radius:var(--radius-md);<?php echo !$currentCategory ? 'background:rgba(var(--color-primary-rgb),0.08);color:var(--color-primary);' : ''; ?>">
+            <aside class="reveal-left products-sidebar">
+                <div class="card products-sidebar-card">
+                    <h2 class="products-sidebar-title"><?php echo $lang === 'ar' ? 'الأقسام' : 'Departments'; ?></h2>
+                    <ul class="cat-tree">
+                        <li>
+                            <a href="<?php echo url('products.php'); ?>" class="cat-tree-link <?php echo !$currentCategory ? 'is-active' : ''; ?>">
                                 <?php echo $lang === 'ar' ? 'جميع المنتجات' : 'All Products'; ?>
                             </a>
                         </li>
-                        <?php foreach ($parentCategories as $cat): ?>
-                        <li style="margin-bottom:var(--space-2);">
-                            <a href="<?php echo url('products.php?category=' . $cat['slug']); ?>" class="nav-dropdown-item" style="border-radius:var(--radius-md);<?php echo $currentCategory && $currentCategory['id'] == $cat['id'] ? 'background:rgba(var(--color-primary-rgb),0.08);color:var(--color-primary);' : ''; ?>">
+                        <?php foreach ($parentCategories as $cat): $isOpen = $activeRootId === (int) $cat['id']; ?>
+                        <li class="<?php echo $isOpen ? 'is-open' : ''; ?>">
+                            <a href="<?php echo url('products.php?category=' . $cat['slug']); ?>" class="cat-tree-link <?php echo $currentCategory && (int) $currentCategory['id'] === (int) $cat['id'] ? 'is-active' : ''; ?>">
                                 <?php echo e($cat['name']); ?>
                             </a>
+                            <?php if ($isOpen && $rootSubs): ?>
+                            <ul class="cat-tree-sub">
+                                <?php foreach ($rootSubs as $sub): ?>
+                                <li><a href="<?php echo url('products.php?category=' . $sub['slug']); ?>" class="cat-tree-link <?php echo (int) $currentCategory['id'] === (int) $sub['id'] ? 'is-active' : ''; ?>"><?php echo e($sub['name']); ?></a></li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <?php endif; ?>
                         </li>
                         <?php endforeach; ?>
                     </ul>
@@ -143,7 +166,15 @@ include BASE_PATH . '/includes/header.php';
             </aside>
             
             <!-- Products Grid -->
-            <div>
+            <div class="products-main">
+                <?php if ($rootSubs): ?>
+                <nav class="subcat-chips" aria-label="<?php echo $lang === 'ar' ? 'الأقسام الفرعية' : 'Sub-sections'; ?>">
+                    <a href="<?php echo url('products.php?category=' . $activeRoot['slug']); ?>" class="subcat-chip <?php echo (int) $currentCategory['id'] === $activeRootId ? 'is-active' : ''; ?>"><?php echo $lang === 'ar' ? 'الكل' : 'All'; ?></a>
+                    <?php foreach ($rootSubs as $sub): ?>
+                    <a href="<?php echo url('products.php?category=' . $sub['slug']); ?>" class="subcat-chip <?php echo (int) $currentCategory['id'] === (int) $sub['id'] ? 'is-active' : ''; ?>"><?php echo e($sub['name']); ?></a>
+                    <?php endforeach; ?>
+                </nav>
+                <?php endif; ?>
                 <div class="products-grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));">
                     <?php foreach ($products as $index => $product): ?>
                     <div class="product-card reveal" style="transition-delay:<?php echo ($index % 3) * 0.1; ?>s">
@@ -185,13 +216,20 @@ include BASE_PATH . '/includes/header.php';
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                         </div>
                         <p class="empty-state-text"><?php echo __('no_products'); ?></p>
+                        <p class="empty-state-hint"><?php echo $lang === 'ar'
+                            ? 'كثير من الأصناف متوفرة في المخزن ولم تُعرض بعد على الموقع. أرسل لنا اسم القطعة أو صورتها وسنرد عليك بالسعر والتوفر.'
+                            : 'Many items are in stock but not listed yet. Send us the part name or a photo and we\'ll reply with price and availability.'; ?></p>
+                        <a class="btn btn-primary" target="_blank" rel="noopener noreferrer"
+                           href="<?php echo e(whatsappLink(getSetting('whatsapp_primary'), ($lang === 'ar' ? 'السلام عليكم، أبحث عن: ' : 'Hello, I am looking for: ') . ($currentCategory['name_' . $lang] ?? ''))); ?>">
+                            <?php echo $lang === 'ar' ? 'اسأل عن التوفر عبر واتساب' : 'Ask availability on WhatsApp'; ?>
+                        </a>
                     </div>
                     <?php endif; ?>
                 </div>
                 
                 <!-- Pagination -->
                 <?php if ($pagination['total_pages'] > 1): ?>
-                <?php echo renderPagination($pagination, $canonicalUrl); ?>
+                <?php echo renderPagination($pagination, $listingBaseUrl); ?>
                 <?php endif; ?>
             </div>
         </div>

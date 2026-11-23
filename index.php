@@ -37,6 +37,24 @@ $categories = Database::fetchAll(
      ORDER BY sort_order"
 );
 
+// Sub-categories grouped by parent (shown inside each category card and in
+// the "all departments" directory — great for visitors and internal linking)
+$subCategoriesByParent = [];
+foreach (Database::fetchAll(
+    "SELECT id, parent_id, name_{$lang} AS name, slug FROM categories
+     WHERE parent_id IS NOT NULL AND is_active = 1 AND deleted_at IS NULL ORDER BY sort_order"
+) as $sub) {
+    $subCategoriesByParent[$sub['parent_id']][] = $sub;
+}
+$productCounts = [];
+foreach (Database::fetchAll(
+    "SELECT COALESCE(c.parent_id, c.id) AS root_id, COUNT(p.id) AS cnt
+     FROM products p JOIN categories c ON c.id = p.category_id
+     WHERE p.is_active = 1 AND p.deleted_at IS NULL GROUP BY root_id"
+) as $row) {
+    $productCounts[$row['root_id']] = (int) $row['cnt'];
+}
+
 // Fetch featured portfolio
 $portfolio = Database::fetchAll(
     "SELECT p.*, c.name_{$lang} as category_name 
@@ -235,20 +253,54 @@ include BASE_PATH . '/includes/header.php';
                     <div class="category-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                     </div>
-                    <h3 class="category-title"><?php echo e($cat['name']); ?></h3>
+                    <h3 class="category-title"><a href="<?php echo url('products.php?category=' . $cat['slug']); ?>"><?php echo e($cat['name']); ?></a></h3>
+                    <?php if (!empty($cat['description'])): ?>
+                    <p class="category-desc"><?php echo e($cat['description']); ?></p>
+                    <?php endif; ?>
+                    <?php $subs = $subCategoriesByParent[$cat['id']] ?? []; ?>
+                    <?php if ($subs): ?>
+                    <ul class="category-subs">
+                        <?php foreach (array_slice($subs, 0, 5) as $sub): ?>
+                        <li><a href="<?php echo url('products.php?category=' . $sub['slug']); ?>"><?php echo e($sub['name']); ?></a></li>
+                        <?php endforeach; ?>
+                        <?php if (count($subs) > 5): ?><li class="more">+<?php echo count($subs) - 5; ?></li><?php endif; ?>
+                    </ul>
+                    <?php endif; ?>
                     <p class="category-count">
-                        <?php 
-                        $count = Database::fetchOne(
-                            "SELECT COUNT(*) as count FROM products WHERE category_id IN (SELECT id FROM categories WHERE id = ? OR parent_id = ?) AND is_active = 1",
-                            [$cat['id'], $cat['id']]
-                        )['count'] ?? 0;
-                        echo $count . ' ' . ($lang === 'ar' ? 'منتج' : 'Products');
+                        <?php
+                        $count = $productCounts[$cat['id']] ?? 0;
+                        echo count($subs) . ' ' . ($lang === 'ar' ? 'قسم فرعي' : 'sub-sections');
+                        if ($count) echo ' · ' . $count . ' ' . ($lang === 'ar' ? 'منتج' : 'products');
                         ?>
                     </p>
-                    <a href="<?php echo url('products.php?category=' . $cat['slug']); ?>" class="btn btn-sm btn-outline" style="margin-top:1rem">
+                    <a href="<?php echo url('products.php?category=' . $cat['slug']); ?>" class="btn btn-sm btn-outline category-cta" aria-label="<?php echo e(__('view_details') . ' - ' . $cat['name']); ?>">
                         <?php echo __('view_details'); ?>
                     </a>
                 </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+
+<!-- All Departments Directory (every sub-section, one tap away) -->
+<section class="section departments-section" aria-labelledby="departments-title">
+    <div class="container">
+        <div class="section-header reveal">
+            <h2 class="section-title" id="departments-title"><?php echo $lang === 'ar' ? 'كل ما تحتاجه في مكان واحد' : 'Everything you need in one place'; ?></h2>
+            <p class="section-subtitle"><?php echo $lang === 'ar'
+                ? 'بيع مستلزمات كهربائية وصناعية، قطع غيار المولدات الكهربائية والمعدات الزراعية، والمنظومات الشمسية — تصفح جميع الأقسام'
+                : 'Electrical & industrial supplies, generator & agricultural spare parts and solar systems — browse every department'; ?></p>
+        </div>
+        <div class="departments-grid">
+            <?php foreach ($categories as $cat): $subs = $subCategoriesByParent[$cat['id']] ?? []; if (!$subs) continue; ?>
+            <div class="department reveal">
+                <h3 class="department-title"><a href="<?php echo url('products.php?category=' . $cat['slug']); ?>"><?php echo e($cat['name']); ?></a></h3>
+                <ul class="department-links">
+                    <?php foreach ($subs as $sub): ?>
+                    <li><a href="<?php echo url('products.php?category=' . $sub['slug']); ?>"><?php echo e($sub['name']); ?></a></li>
+                    <?php endforeach; ?>
+                </ul>
             </div>
             <?php endforeach; ?>
         </div>
